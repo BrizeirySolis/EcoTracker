@@ -21,7 +21,7 @@ import { WaterConsumption } from '../../models/consumption.model';
         <h2>Agua</h2>
 
         <div class="form-group">
-          <label for="consumption">Agua consumida (litros)</label>
+          <label for="consumption">Agua consumida (m3)</label>
           <input
             type="number"
             id="consumption"
