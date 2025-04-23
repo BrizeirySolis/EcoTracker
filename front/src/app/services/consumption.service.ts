@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import { ElectricityConsumption, WaterConsumption, TransportUsage, ConsumptionSummary } from '../models/consumption.model';
-import { Observable } from 'rxjs';
+import {catchError, Observable, throwError} from 'rxjs';
 import { map } from 'rxjs/operators';
+import {AuthService} from './auth.service';
+import {Router} from '@angular/router';
 
 /**
  * Service to manage all consumption data
@@ -14,16 +16,51 @@ import { map } from 'rxjs/operators';
 export class ConsumptionService {
   private readonly API_URL = 'http://localhost:8080/api';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+// Método privado para manejar errores
+  private handleError(error: HttpErrorResponse) {
+    console.error('Error en la solicitud HTTP:', error);
+
+    // Si es un error 401 (Unauthorized), redirigir al login
+    if (error.status === 401) {
+      console.log('Error de autenticación. Redirigiendo al login...');
+      this.authService.logout();
+      this.router.navigate(['/login'], {
+        queryParams: {
+          returnUrl: this.router.url,
+          authError: 'Tu sesión ha expirado o no es válida. Por favor, inicia sesión nuevamente.'
+        }
+      });
+    }
+
+    return throwError(() => error);
+  }
 
   /**
-   * Save electricity consumption data
-   * @param data The electricity consumption data to save
-   * @returns Observable of the saved data with generated ID
+   * Get summary of all consumption data for charts
+   * @returns Observable of consumption summary data
    */
-  saveElectricityConsumption(data: ElectricityConsumption): Observable<ElectricityConsumption> {
-    return this.http.post<ElectricityConsumption>(`${this.API_URL}/electricity`, data);
+  getConsumptionSummary(): Observable<ConsumptionSummary[]> {
+    return this.http.get<ConsumptionSummary[]>(`${this.API_URL}/summary`)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
   }
+
+// También aplica catchError a los demás métodos
+  saveElectricityConsumption(data: ElectricityConsumption): Observable<ElectricityConsumption> {
+    return this.http.post<ElectricityConsumption>(`${this.API_URL}/electricity`, data)
+      .pipe(
+        catchError(this.handleError.bind(this))
+      );
+  }
+
+// Y así con el resto de métodos...
 
   /**
    * Get all electricity consumption entries
@@ -85,12 +122,4 @@ export class ConsumptionService {
       );
   }
 
-  /**
-   * Get summary of all consumption data for charts
-   * @returns Observable of consumption summary data
-   */
-  getConsumptionSummary(): Observable<ConsumptionSummary[]> {
-    // Obtenemos los datos del resumen directamente de la API
-    return this.http.get<ConsumptionSummary[]>(`${this.API_URL}/summary`);
-  }
 }

@@ -1,12 +1,10 @@
 package com.lilim.ecotracker.features.summary.controller;
 
-import com.lilim.ecotracker.features.electricity.model.Electricity;
 import com.lilim.ecotracker.features.electricity.repository.ElectricityRepository;
 import com.lilim.ecotracker.features.summary.dto.ConsumptionSummaryDTO;
-import com.lilim.ecotracker.features.transport.model.Transport;
 import com.lilim.ecotracker.features.transport.repository.TransportRepository;
-import com.lilim.ecotracker.features.water.model.Water;
 import com.lilim.ecotracker.features.water.repository.WaterRepository;
+import com.lilim.ecotracker.security.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,29 +22,34 @@ public class SummaryController {
     private final ElectricityRepository electricityRepository;
     private final WaterRepository waterRepository;
     private final TransportRepository transportRepository;
+    private final UserService userService;
 
     @Autowired
     public SummaryController(
             ElectricityRepository electricityRepository,
             WaterRepository waterRepository,
-            TransportRepository transportRepository) {
+            TransportRepository transportRepository,
+            UserService userService) {
         this.electricityRepository = electricityRepository;
         this.waterRepository = waterRepository;
         this.transportRepository = transportRepository;
+        this.userService = userService;
     }
 
     @GetMapping
     public ResponseEntity<List<ConsumptionSummaryDTO>> getSummary() {
-        // Calcular la suma de cada tipo de consumo
-        double electricityTotal = electricityRepository.findAll().stream()
+        Long userId = userService.getCurrentUser().getId();
+
+        // Calcular la suma de cada tipo de consumo para el usuario actual
+        double electricityTotal = electricityRepository.findByUserId(userId).stream()
                 .mapToDouble(e -> e.getKilowatts())
                 .sum();
 
-        double waterTotal = waterRepository.findAll().stream()
+        double waterTotal = waterRepository.findByUserId(userId).stream()
                 .mapToDouble(w -> w.getLiters())
                 .sum();
 
-        double transportTotal = transportRepository.findAll().stream()
+        double transportTotal = transportRepository.findByUserId(userId).stream()
                 .mapToDouble(t -> t.getKilometers())
                 .sum();
 

@@ -1,21 +1,67 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { ConsumptionService } from '../../services/consumption.service';
 import { ConsumptionSummary } from '../../models/consumption.model';
+import { AuthService } from '../../services/auth.service';
 
-/**
- * Home component that displays the dashboard with consumption summary
- * and ecological impact statistics
- */
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, NavbarComponent],
+  imports: [CommonModule, NavbarComponent, RouterLink],
   template: `
     <app-navbar></app-navbar>
 
-    <div class="container">
+    <!-- Welcome Section para usuarios no autenticados -->
+    <div class="welcome-section" *ngIf="!isLoggedIn">
+      <div class="container">
+        <div class="hero">
+          <h1>Bienvenido a EcoTracker</h1>
+          <p class="subtitle">Monitorea tu impacto ambiental y contribuye a un futuro más sostenible</p>
+
+          <div class="call-to-action">
+            <a routerLink="/register" class="btn-get-started">Comenzar Ahora</a>
+            <a routerLink="/login" class="btn-login">Iniciar Sesión</a>
+          </div>
+        </div>
+
+        <div class="features">
+          <div class="feature-card">
+            <div class="icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48">
+                <path fill="#00b359" d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15C12.96 17.55 11 21 11 21z"/>
+              </svg>
+            </div>
+            <h3>Monitorea tu Energía</h3>
+            <p>Registra y analiza tu consumo de electricidad para identificar áreas de mejora.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48">
+                <path fill="#00b359" d="M12 2c-5.33 4.55-8 8.48-8 11.8 0 4.98 3.8 8.2 8 8.2s8-3.22 8-8.2c0-3.32-2.67-7.25-8-11.8z"/>
+              </svg>
+            </div>
+            <h3>Gestiona tu Agua</h3>
+            <p>Registra tu consumo de agua y recibe recomendaciones para reducir su uso.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48">
+                <path fill="#00b359" d="M4 16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-6H4v6zm16-10H4c-1.1 0-2 .9-2 2v2h20v-2c0-1.1-.9-2-2-2z"/>
+              </svg>
+            </div>
+            <h3>Seguimiento de Transporte</h3>
+            <p>Registra tus viajes y calcula tu huella de carbono relacionada con el transporte.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard para usuarios autenticados -->
+    <div class="container" *ngIf="isLoggedIn">
       <div class="dashboard-grid">
         <div class="impact-summary">
           <h2>Resumen de Impacto</h2>
@@ -28,10 +74,10 @@ import { ConsumptionSummary } from '../../models/consumption.model';
 
               <!-- Pie segments - hardcoded for demo -->
               <path *ngFor="let segment of pieSegments; let i = index"
-                [attr.d]="segment.path"
-                [attr.fill]="getColor(i)"
-                stroke="#fff"
-                stroke-width="1" />
+                    [attr.d]="segment.path"
+                    [attr.fill]="getColor(i)"
+                    stroke="#fff"
+                    stroke-width="1" />
 
               <!-- Center circle (optional) -->
               <circle cx="150" cy="150" r="60" fill="white" />
@@ -75,7 +121,7 @@ import { ConsumptionSummary } from '../../models/consumption.model';
           </div>
 
           <div class="tip-of-day">
-            <h3>Tip del día: XXXXXXX</h3>
+            <h3>Tip del día: Ahorra Energía</h3>
             <p>Apaga los dispositivos electrónicos cuando no los estés utilizando para ahorrar energía.</p>
           </div>
         </div>
@@ -83,6 +129,94 @@ import { ConsumptionSummary } from '../../models/consumption.model';
     </div>
   `,
   styles: `
+    /* Estilos para la página de bienvenida */
+    .welcome-section {
+      background-color: #f9f9f9;
+      padding: 40px 0;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    h1 {
+      color: #00b359;
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      color: #555;
+      max-width: 600px;
+      margin: 0 auto 30px;
+    }
+
+    .call-to-action {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .btn-get-started, .btn-login {
+      display: inline-block;
+      padding: 12px 24px;
+      border-radius: 24px;
+      font-weight: bold;
+      text-decoration: none;
+      transition: background-color 0.3s;
+    }
+
+    .btn-get-started {
+      background-color: #00b359;
+      color: white;
+    }
+
+    .btn-get-started:hover {
+      background-color: #00833c;
+    }
+
+    .btn-login {
+      background-color: white;
+      color: #00b359;
+      border: 2px solid #00b359;
+    }
+
+    .btn-login:hover {
+      background-color: #f0f0f0;
+    }
+
+    .features {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 30px;
+    }
+
+    .feature-card {
+      background-color: white;
+      border-radius: 12px;
+      padding: 30px;
+      width: 300px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .icon {
+      margin-bottom: 20px;
+    }
+
+    .feature-card h3 {
+      color: #00b359;
+      margin-bottom: 12px;
+    }
+
+    .feature-card p {
+      color: #666;
+    }
+
+    /* Estilos del dashboard */
     .container {
       padding: 20px;
       max-width: 1200px;
@@ -98,6 +232,16 @@ import { ConsumptionSummary } from '../../models/consumption.model';
     @media (max-width: 768px) {
       .dashboard-grid {
         grid-template-columns: 1fr;
+      }
+
+      .features {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .feature-card {
+        width: 100%;
+        max-width: 300px;
       }
     }
 
@@ -195,16 +339,48 @@ import { ConsumptionSummary } from '../../models/consumption.model';
   `
 })
 export class HomeComponent implements OnInit {
+  isLoggedIn = false;
   summary: ConsumptionSummary[] = [];
   pieSegments: { path: string }[] = [];
 
-  constructor(private consumptionService: ConsumptionService) {}
+  constructor(
+    private consumptionService: ConsumptionService,
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
+    // Verificar si el usuario está autenticado
+    this.isLoggedIn = this.authService.isLoggedIn();
+
+    // Solo cargar los datos del dashboard si el usuario está autenticado
+    if (this.isLoggedIn) {
+      this.loadDashboardData();
+    }
+  }
+
+  loadDashboardData(): void {
     // Get consumption summary data
-    this.consumptionService.getConsumptionSummary().subscribe(data => {
-      this.summary = data;
-      this.generatePieChart();
+    this.consumptionService.getConsumptionSummary().subscribe({
+      next: data => {
+        this.summary = data;
+        this.generatePieChart();
+      },
+      error: error => {
+        console.error('Error al cargar los datos del resumen', error);
+
+        // Si hay un error de autenticación (token expirado), hacer logout
+        if (error.status === 401) {
+          console.log('Error de autenticación. Cerrando sesión...');
+          this.authService.logout();
+          this.router.navigate(['/login'], {
+            queryParams: {
+              returnUrl: this.router.url,
+              authError: 'Tu sesión ha expirado o no es válida. Por favor, inicia sesión nuevamente.'
+            }
+          });
+        }
+      }
     });
   }
 
