@@ -1,0 +1,83 @@
+.kpi-card {
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 160px;
+  transition: all 0.3s ease;
+}
+
+.kpi-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+// Status variants
+.kpi-card.status-success {
+  border-left: 4px solid #4CAF50;
+}
+
+.kpi-card.status-warning {
+  border-left: 4px solid #FFC107;
+}
+
+.kpi-card.status-danger {
+  border-left: 4px solid #F44336;
+}
+
+.kpi-card.status-info {
+  border-left: 4px solid #2196F3;
+}
+
+.kpi-card.status-neutral {
+  border-left: 4px solid #9E9E9E;
+}
+
+// Header styles
+.kpi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.kpi-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #555;
+  margin: 0;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.status-success .status-dot {
+  background-color: #4CAF50;
+}
+
+.status-warning .status-dot {
+  background-color: #FFC107;
+}
+
+.status-danger .status-dot {
+  background-color: #F44336;
+}
+
+.status-info .status-dot {
+  background-color: #2196F3;
+}
+
+// And many more styles...
+// The rest of your existing KPI card styles would go here

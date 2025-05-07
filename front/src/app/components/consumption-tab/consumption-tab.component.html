@@ -1,0 +1,144 @@
+<!-- HTML actualizado para ConsumptionTabComponent -->
+<div class="tabs">
+  <div class="tab"
+       [ngClass]="{'active': activeTab === 'agua'}"
+       (click)="selectTab('agua')">
+    <svg class="tab-icon" viewBox="0 0 24 24" width="20" height="20">
+      <path d="M12 2c-5.33 4.55-8 8.48-8 11.8 0 4.98 3.8 8.2 8 8.2s8-3.22 8-8.2c0-3.32-2.67-7.25-8-11.8zm0 18c-3.35 0-6-2.57-6-6.2 0-2.34 1.95-5.44 6-9.14 4.05 3.7 6 6.79 6 9.14 0 3.63-2.65 6.2-6 6.2z" fill="currentColor"/>
+    </svg>
+    <span>Agua</span>
+  </div>
+  <div class="tab"
+       [ngClass]="{'active': activeTab === 'electricidad'}"
+       (click)="selectTab('electricidad')">
+    <svg class="tab-icon" viewBox="0 0 24 24" width="20" height="20">
+      <path d="M7 2v11h3v9l7-12h-4l4-8z" fill="currentColor"/>
+    </svg>
+    <span>Electricidad</span>
+  </div>
+  <div class="tab"
+       [ngClass]="{'active': activeTab === 'transporte'}"
+       (click)="selectTab('transporte')">
+    <svg class="tab-icon" viewBox="0 0 24 24" width="20" height="20">
+      <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" fill="currentColor"/>
+    </svg>
+    <span>Transporte</span>
+  </div>
+</div>
+
+<!-- CSS actualizado para ConsumptionTabComponent -->
+<style>
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid #eee;
+    overflow: hidden;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    background-color: #fdfdfd;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 24px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+    flex: 1;
+    position: relative;
+    color: #555;
+    font-size: 1rem;
+  }
+
+  .tab-icon {
+    margin-right: 8px;
+  }
+
+  .tab:hover {
+    background-color: #f7f7f7;
+    color: #333;
+  }
+
+  .tab::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.3s ease;
+  }
+
+  :host-context(.theme-agua) .tab.active {
+    color: var(--color-agua-primary);
+    background-color: rgba(2, 136, 209, 0.05);
+  }
+
+  :host-context(.theme-agua) .tab.active::after {
+    background-color: var(--color-agua-primary);
+    transform: scaleX(1);
+  }
+
+  :host-context(.theme-agua) .tab-icon {
+    color: var(--color-agua-primary);
+  }
+
+  :host-context(.theme-electricidad) .tab.active {
+    color: var(--color-electricidad-primary);
+    background-color: rgba(255, 179, 0, 0.05);
+  }
+
+  :host-context(.theme-electricidad) .tab.active::after {
+    background-color: var(--color-electricidad-primary);
+    transform: scaleX(1);
+  }
+
+  :host-context(.theme-electricidad) .tab-icon {
+    color: var(--color-electricidad-primary);
+  }
+
+  :host-context(.theme-transporte) .tab.active {
+    color: var(--color-transporte-primary);
+    background-color: rgba(67, 160, 71, 0.05);
+  }
+
+  :host-context(.theme-transporte) .tab.active::after {
+    background-color: var(--color-transporte-primary);
+    transform: scaleX(1);
+  }
+
+  :host-context(.theme-transporte) .tab-icon {
+    color: var(--color-transporte-primary);
+  }
+
+  /* Responsive styles */
+  @media (max-width: 600px) {
+    .tab {
+      padding: 12px 16px;
+      font-size: 0.9rem;
+    }
+
+    .tab-icon {
+      margin-right: 4px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .tab span {
+      display: none;
+    }
+
+    .tab-icon {
+      margin-right: 0;
+      width: 24px;
+      height: 24px;
+    }
+  }
+</style>

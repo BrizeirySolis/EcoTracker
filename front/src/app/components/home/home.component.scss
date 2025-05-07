@@ -1,0 +1,105 @@
+// Welcome section styles
+.welcome-section {
+  background-color: #f9f9f9;
+  padding: 40px 0;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+h1 {
+  color: #00b359;
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: #555;
+  max-width: 600px;
+  margin: 0 auto 30px;
+}
+
+.call-to-action {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.btn-get-started, .btn-login {
+  display: inline-block;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-weight: bold;
+  text-decoration: none;
+  transition: background-color 0.3s;
+}
+
+.btn-get-started {
+  background-color: #00b359;
+  color: white;
+}
+
+.btn-get-started:hover {
+  background-color: #00833c;
+}
+
+.btn-login {
+  background-color: white;
+  color: #00b359;
+  border: 2px solid #00b359;
+}
+
+.btn-login:hover {
+  background-color: #f0f0f0;
+}
+
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.features {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 30px;
+}
+
+.feature-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 30px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.icon {
+  margin-bottom: 20px;
+}
+
+.feature-card h3 {
+  color: #00b359;
+  margin-bottom: 12px;
+}
+
+.feature-card p {
+  color: #666;
+}
+
+// Responsive styles
+@media (max-width: 768px) {
+  .features {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .feature-card {
+    width: 100%;
+    max-width: 300px;
+  }
+}

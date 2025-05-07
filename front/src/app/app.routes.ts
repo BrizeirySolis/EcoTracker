@@ -48,6 +48,32 @@ export const routes: Routes = [
     loadComponent: () => import('./components/profile/profile.component').then(m => m.ProfileComponent),
     canActivate: [AuthGuard]
   },
+  // Bitácoras routes
+  {
+    path: 'bitacoras',
+    loadComponent: () => import('./components/bitacoras/bitacora-list/bitacora-list.component').then(m => m.BitacoraListComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'bitacoras/new',
+    loadComponent: () => import('./components/bitacoras/bitacora-form/bitacora-form.component').then(m => m.BitacoraFormComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'bitacoras/edit/:id',
+    loadComponent: () => import('./components/bitacoras/bitacora-form/bitacora-form.component').then(m => m.BitacoraFormComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'bitacoras/:id',
+    loadComponent: () => import('./components/bitacoras/bitacora-detail/bitacora-detail.component').then(m => m.BitacoraDetailComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'bitacoras/timeline',
+    loadComponent: () => import('./components/bitacoras/bitacora-timeline/bitacora-timeline.component').then(m => m.BitacoraTimelineComponent),
+    canActivate: [AuthGuard]
+  },
   {
     path: '**',
     redirectTo: '/home'

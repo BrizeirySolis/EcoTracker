@@ -1,0 +1,104 @@
+<!-- HTML actualizado para KpiPaginationComponent -->
+<div class="kpi-pagination">
+  <button class="pagination-btn prev-btn"
+          [disabled]="currentPage === 0"
+          (click)="prevPage()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+    <span>Anterior</span>
+  </button>
+
+  <div class="page-indicator">
+<span class="page-dot"
+      *ngFor="let dot of [].constructor(totalPages); let i = index"
+      [ngClass]="{'active': currentPage === i}">
+</span>
+  </div>
+
+  <button class="pagination-btn next-btn"
+          [disabled]="currentPage === totalPages - 1"
+          (click)="nextPage()">
+    <span>Siguiente</span>
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </button>
+</div>
+
+<!-- CSS actualizado para KpiPaginationComponent -->
+<style>
+  .kpi-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 24px 0;
+    gap: 16px;
+  }
+
+  .pagination-btn {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 50px;
+    background-color: #f5f5f5;
+    color: #333;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .prev-btn svg {
+    margin-right: 6px;
+  }
+
+  .next-btn svg {
+    margin-left: 6px;
+  }
+
+  .pagination-btn:hover:not(:disabled) {
+    background-color: #e0e0e0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+  }
+
+  .pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .page-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .page-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #ddd;
+  }
+
+  .page-dot.active {
+    background-color: #4CAF50;
+    transform: scale(1.2);
+  }
+
+  /* Theming for different consumption types */
+  :host-context(.theme-agua) .page-dot.active {
+    background-color: #2196F3;
+  }
+
+  :host-context(.theme-electricidad) .page-dot.active {
+    background-color: #FFC107;
+  }
+
+  :host-context(.theme-transporte) .page-dot.active {
+    background-color: #4CAF50;
+  }
+</style>
+

@@ -1,0 +1,205 @@
+/* CSS específico para WaterDashboardComponent */
+.water-dashboard {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Estilos para sección de recomendaciones */
+.recommendations-section {
+  background-color: #f5f9fc;
+  border-radius: 16px;
+  padding: 28px;
+  margin-top: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.recommendations-section h3 {
+  font-size: 1.4rem;
+  margin-bottom: 24px;
+  color: #01579B;
+  text-align: center;
+  font-weight: 600;
+}
+
+.recommendations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.recommendation-item {
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+}
+
+.recommendation-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-left-color: var(--color-agua-primary, #0288D1);
+}
+
+.recommendation-icon {
+  background-color: var(--color-agua-light, #B3E5FC);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(2, 136, 209, 0.1);
+}
+
+.recommendation-icon svg {
+  color: var(--color-agua-primary, #0288D1);
+  width: 24px;
+  height: 24px;
+}
+
+.recommendation-content {
+  flex-grow: 1;
+}
+
+.recommendation-content h4 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: #01579B;
+}
+
+.recommendation-content p {
+  font-size: 0.95rem;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Estados para KPI cards */
+.water-dashboard .status-success {
+  border-left-color: var(--color-positive, #4CAF50);
+}
+
+.water-dashboard .status-warning {
+  border-left-color: var(--color-warning, #FFC107);
+}
+
+.water-dashboard .status-danger {
+  border-left-color: var(--color-negative, #F44336);
+}
+
+.water-dashboard .status-info {
+  border-left-color: var(--color-agua-primary, #2196F3);
+}
+
+.water-dashboard .status-neutral {
+  border-left-color: #9E9E9E;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .recommendations-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-register {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  margin: 24px 0;
+}
+
+/* Estilos para gráficos de agua */
+.water-dashboard .sparkline-path {
+  stroke: var(--color-agua-primary, #0288D1);
+  stroke-width: 2.5;
+}
+
+.water-dashboard .sparkline-point {
+  fill: var(--color-agua-primary, #0288D1);
+  stroke: white;
+  stroke-width: 1.5;
+}
+
+/* Contenedor de paginación */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+/* Botón con estilo específico para agua */
+.action-button {
+  text-align: center;
+  margin: 36px 0;
+}
+
+.btn-register {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-agua-primary, #0288D1);
+  color: white;
+  padding: 14px 28px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-decoration: none;
+  box-shadow: 0 4px 8px rgba(2, 136, 209, 0.2);
+  transition: all 0.3s ease;
+}
+
+.btn-register:hover {
+  background-color: var(--color-agua-dark, #01579B);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(2, 136, 209, 0.3);
+}
+
+/* Estilos para tendencias específicas de agua */
+.water-dashboard .trend-negative {
+  color: var(--color-negative, #E53935);
+}
+
+.water-dashboard .trend-positive {
+  color: var(--color-positive, #43A047);
+}
+
+/* Estilos para KPI específicos de agua */
+.water-dashboard .kpi-card {
+  border-radius: 16px;
+  background: linear-gradient(145deg, #ffffff, #f9f9f9);
+  box-shadow:
+    0 6px 12px rgba(2, 136, 209, 0.05),
+    0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.water-dashboard .kpi-card .kpi-value {
+  color: #01579B;
+  font-size: 2.2rem;
+  font-weight: 700;
+}
+
+.water-dashboard .kpi-card .kpi-unit {
+  font-size: 1.1rem;
+  color: #0288D1;
+}
+

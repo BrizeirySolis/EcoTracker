@@ -1,0 +1,218 @@
+<!-- HTML actualizado para TransportDashboardComponent -->
+<div class="transport-dashboard">
+  <!-- KPI Cards Grid -->
+  <div class="kpi-grid">
+    <ng-container *ngIf="currentKpiPage === 0">
+      <!-- KPI Pair 1: Distance & Cost -->
+      <app-kpi-card *ngFor="let kpi of transportKpis.slice(0, 2)"
+                    [title]="kpi.title"
+                    [primaryValue]="kpi.primaryValue"
+                    [primaryUnit]="kpi.primaryUnit"
+                    [secondaryValue]="kpi.secondaryValue"
+                    [secondaryUnit]="kpi.secondaryUnit"
+                    [status]="kpi.status"
+                    [trend]="kpi.trend"
+                    [footerText]="kpi.footerText"
+                    [sparklinePath]="kpi.sparklinePath"
+                    [sparklineEndPoint]="kpi.sparklineEndPoint">
+      </app-kpi-card>
+    </ng-container>
+
+    <ng-container *ngIf="currentKpiPage === 1">
+      <!-- KPI Pair 2: CO2 Emissions & Sustainable Transport -->
+      <app-kpi-card *ngFor="let kpi of transportKpis.slice(2, 4)"
+                    [title]="kpi.title"
+                    [primaryValue]="kpi.primaryValue"
+                    [primaryUnit]="kpi.primaryUnit"
+                    [secondaryValue]="kpi.secondaryValue"
+                    [secondaryUnit]="kpi.secondaryUnit"
+                    [status]="kpi.status"
+                    [trend]="kpi.trend"
+                    [footerText]="kpi.footerText"
+                    [sparklinePath]="kpi.sparklinePath"
+                    [sparklineEndPoint]="kpi.sparklineEndPoint">
+      </app-kpi-card>
+    </ng-container>
+
+    <ng-container *ngIf="currentKpiPage === 2">
+      <!-- KPI Pair 3: Transport Distribution & Efficiency -->
+      <app-kpi-card *ngFor="let kpi of transportKpis.slice(4, 6)"
+                    [title]="kpi.title"
+                    [primaryValue]="kpi.primaryValue"
+                    [primaryUnit]="kpi.primaryUnit"
+                    [secondaryValue]="kpi.secondaryValue"
+                    [secondaryUnit]="kpi.secondaryUnit"
+                    [status]="kpi.status"
+                    [trend]="kpi.trend"
+                    [footerText]="kpi.footerText"
+                    [sparklinePath]="kpi.sparklinePath"
+                    [sparklineEndPoint]="kpi.sparklineEndPoint">
+      </app-kpi-card>
+    </ng-container>
+  </div>
+
+  <div class="pagination-container">
+    <app-kpi-pagination
+      [currentPage]="currentKpiPage"
+      [totalPages]="3"
+      (pageChange)="onPageChange($event)">
+    </app-kpi-pagination>
+  </div>
+
+  <!-- Action button for usage registration -->
+  <div class="action-button">
+    <a [routerLink]="'/' + activeTabName" class="btn-register">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           style="margin-right: 8px;">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Registrar uso de transporte
+    </a>
+  </div>
+
+  <!-- HTML actualizado para recomendaciones de transporte -->
+  <div class="recommendations-section">
+    <h3>Recomendaciones para transporte sostenible</h3>
+
+    <div class="recommendations-grid">
+      <div class="recommendation-item">
+        <div class="recommendation-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24">
+            <path
+              d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"
+              fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="recommendation-content">
+          <h4>Comparte tu viaje</h4>
+          <p>Compartir el automóvil puede reducir las emisiones de CO2 hasta en un 50% y dividir los costos de
+            transporte entre los pasajeros.</p>
+        </div>
+      </div>
+
+      <div class="recommendation-item">
+        <div class="recommendation-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24">
+            <path
+              d="M15.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM5 12c-2.8 0-5 2.2-5 5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5zm0 8.5c-1.9 0-3.5-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5zm5.8-10l2.4-2.4.8.8c1.3 1.3 3 2.1 5.1 2.1V9c-1.5 0-2.7-.6-3.6-1.5l-1.9-1.9c-.5-.4-1-.6-1.6-.6s-1.1.2-1.4.6L7.8 8.4c-.4.4-.6.9-.6 1.4 0 .6.2 1.1.6 1.4L11 14v5h2v-6.2l-2.2-2.3zM19 12c-2.8 0-5 2.2-5 5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5zm0 8.5c-1.9 0-3.5-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5z"
+              fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="recommendation-content">
+          <h4>Considera la bicicleta</h4>
+          <p>Para distancias menores a 5 km, la bicicleta es más rápida que el automóvil en zonas urbanas y no genera
+            emisiones de CO2.</p>
+        </div>
+      </div>
+
+      <div class="recommendation-item">
+        <div class="recommendation-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24">
+            <path
+              d="M4 16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2H8.05l-2-2H4c-1.1 0-2 .9-2 2v10zm2.5-1c-.83 0-1.5-.67-1.5-1.5S5.67 12 6.5 12s1.5.67 1.5 1.5S7.33 15 6.5 15zm3-3c-.83 0-1.5-.67-1.5-1.5S8.67 9 9.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm5 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3 3c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"
+              fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="recommendation-content">
+          <h4>Planifica rutas eficientes</h4>
+          <p>Combinar varias diligencias en un solo viaje puede reducir tu huella de carbono hasta un 40% y ahorrar
+            tiempo y combustible.</p>
+        </div>
+      </div>
+
+      <div class="recommendation-item">
+        <div class="recommendation-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24">
+            <path
+              d="M4 16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-6H4v6zm16-10H4c-1.1 0-2 .9-2 2v2h20v-2c0-1.1-.9-2-2-2zm-5 4h4v4h-4v-4zm0 5h4v2h-4v-2z"
+              fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="recommendation-content">
+          <h4>Usa transporte público</h4>
+          <p>El transporte público puede reducir tu huella de carbono hasta en un 80% comparado con viajar solo en
+            automóvil particular.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CSS adicional específico para TransportDashboardComponent -->
+  <style>
+    .transport-dashboard {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Estilos específicos para gráficos de transporte */
+    .transport-dashboard .sparkline-path {
+      stroke: var(--color-transporte-primary);
+      stroke-width: 2.5;
+    }
+
+    .transport-dashboard .sparkline-point {
+      fill: var(--color-transporte-primary);
+      stroke: white;
+      stroke-width: 1.5;
+    }
+
+    /* Botón con estilo específico para transporte */
+    .transport-dashboard .btn-register {
+      background-color: var(--color-transporte-primary);
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .transport-dashboard .btn-register:hover {
+      background-color: var(--color-transporte-dark);
+    }
+
+    /* Estilos específicos para tendencias de transporte */
+    .transport-dashboard .trend-negative {
+      color: var(--color-negative);
+    }
+
+    .transport-dashboard .trend-positive {
+      color: var(--color-positive);
+    }
+
+    /* Estilos para KPI específicos de transporte */
+    .transport-dashboard .kpi-card {
+      border-radius: 16px;
+      background: linear-gradient(145deg, #ffffff, #f9f9f9);
+      box-shadow: 0 6px 12px rgba(67, 160, 71, 0.05),
+      0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .transport-dashboard .kpi-value {
+      color: #2E7D32;
+    }
+
+    .transport-dashboard .recommendation-item {
+      transition: all 0.3s ease;
+      border-left: 3px solid transparent;
+    }
+
+    .transport-dashboard .recommendation-item:hover {
+      border-left-color: var(--color-transporte-primary);
+    }
+
+    .transport-dashboard .kpi-pagination .page-dot.active {
+      background-color: var(--color-transporte-primary);
+    }
+  </style>
+</div>

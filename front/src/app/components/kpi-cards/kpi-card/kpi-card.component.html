@@ -1,0 +1,301 @@
+<!-- HTML actualizado para KpiCardComponent -->
+<div class="kpi-card" [ngClass]="'status-' + status">
+  <div class="kpi-header">
+    <h4 class="kpi-title">{{ title }}</h4>
+    <div *ngIf="status !== 'neutral'" class="status-indicator">
+      <div class="status-dot"></div>
+    </div>
+  </div>
+
+  <div class="kpi-body">
+    <!-- Primary value display -->
+    <div class="kpi-value-container">
+      <div class="kpi-value">{{ primaryValue }}</div>
+      <div *ngIf="primaryUnit" class="kpi-unit">{{ primaryUnit }}</div>
+    </div>
+
+    <!-- Secondary value (if provided) -->
+    <div *ngIf="secondaryValue" class="kpi-secondary">
+      <div class="secondary-value">{{ secondaryValue }}</div>
+      <div *ngIf="secondaryUnit" class="secondary-unit">{{ secondaryUnit }}</div>
+    </div>
+
+    <!-- Trend indicator (if provided) -->
+    <div *ngIf="trend" class="kpi-trend" [ngClass]="{
+      'trend-up': trend.direction === 'up',
+      'trend-down': trend.direction === 'down',
+      'trend-positive': trend.isPositive,
+      'trend-negative': !trend.isPositive
+    }">
+      <div class="trend-arrow">
+        <svg *ngIf="trend.direction === 'up'" viewBox="0 0 24 24" width="18" height="18">
+          <path d="M7 14l5-5 5 5z" fill="currentColor"></path>
+        </svg>
+        <svg *ngIf="trend.direction === 'down'" viewBox="0 0 24 24" width="18" height="18">
+          <path d="M7 10l5 5 5-5z" fill="currentColor"></path>
+        </svg>
+        <svg *ngIf="trend.direction === 'neutral'" viewBox="0 0 24 24" width="18" height="18">
+          <path d="M5 12h14" stroke="currentColor" stroke-width="2"></path>
+        </svg>
+      </div>
+      <div class="trend-value">{{ trend.value >= 0 ? '+' : '' }}{{ trend.value.toFixed(1) }}%</div>
+    </div>
+  </div>
+
+  <!-- Footer content (if provided) -->
+  <div *ngIf="footerText" class="kpi-footer">
+    {{ footerText }}
+  </div>
+
+  <!-- Optional chart/sparkline -->
+  <div *ngIf="sparklinePath" class="kpi-sparkline">
+    <svg width="100%" height="40" viewBox="0 0 100 40" preserveAspectRatio="none">
+      <path [attr.d]="sparklinePath" class="sparkline-path"></path>
+      <circle *ngIf="sparklineEndPoint"
+              [attr.cx]="sparklineEndPoint.x"
+              [attr.cy]="sparklineEndPoint.y"
+              r="3"
+              class="sparkline-point"></circle>
+    </svg>
+  </div>
+</div>
+
+<!-- CSS actualizado para KpiCardComponent -->
+<style>
+  .kpi-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 180px;
+    transition: all 0.3s ease;
+    border-left-width: 5px;
+    border-left-style: solid;
+  }
+
+  .kpi-card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+    transform: translateY(-3px);
+  }
+
+  /* Status variants with stronger colors */
+  .kpi-card.status-success {
+    border-left-color: #4CAF50;
+  }
+
+  .kpi-card.status-warning {
+    border-left-color: #FFC107;
+  }
+
+  .kpi-card.status-danger {
+    border-left-color: #F44336;
+  }
+
+  .kpi-card.status-info {
+    border-left-color: #2196F3;
+  }
+
+  .kpi-card.status-neutral {
+    border-left-color: #9E9E9E;
+  }
+
+  /* Header styles */
+  .kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .kpi-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+  }
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+  }
+
+  .status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+
+  .status-success .status-dot {
+    background-color: #4CAF50;
+  }
+
+  .status-warning .status-dot {
+    background-color: #FFC107;
+  }
+
+  .status-danger .status-dot {
+    background-color: #F44336;
+  }
+
+  .status-info .status-dot {
+    background-color: #2196F3;
+  }
+
+  /* Body styles with larger font sizes */
+  .kpi-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .kpi-value-container {
+    display: flex;
+    align-items: baseline;
+  }
+
+  .kpi-value {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #333;
+  }
+
+  .kpi-unit {
+    font-size: 1.1rem;
+    color: #666;
+    margin-left: 4px;
+  }
+
+  .kpi-secondary {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+  }
+
+  .secondary-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #555;
+  }
+
+  .secondary-unit {
+    font-size: 1rem;
+    color: #777;
+    margin-left: 4px;
+  }
+
+  /* Trend indicator with more distinct colors */
+  .kpi-trend {
+    display: flex;
+    align-items: center;
+    margin-top: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .trend-arrow {
+    margin-right: 6px;
+    display: flex;
+    align-items: center;
+  }
+
+  .trend-up.trend-positive,
+  .trend-down.trend-negative {
+    color: #4CAF50; /* Bright green for positive */
+  }
+
+  .trend-up.trend-negative,
+  .trend-down.trend-positive {
+    color: #F44336; /* Bright red for negative */
+  }
+
+  .trend-up.trend-positive svg,
+  .trend-down.trend-negative svg {
+    fill: #4CAF50;
+  }
+
+  .trend-up.trend-negative svg,
+  .trend-down.trend-positive svg {
+    fill: #F44336;
+  }
+
+  /* Footer */
+  .kpi-footer {
+    font-size: 0.9rem;
+    color: #777;
+    margin-top: 16px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+  }
+
+  /* Sparkline with better styling */
+  .kpi-sparkline {
+    margin-top: 16px;
+    height: 40px;
+  }
+
+  .sparkline-path {
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .status-success .sparkline-path {
+    stroke: #4CAF50;
+  }
+
+  .status-success .sparkline-point {
+    fill: #4CAF50;
+    stroke: white;
+    stroke-width: 1;
+  }
+
+  .status-warning .sparkline-path {
+    stroke: #FFC107;
+  }
+
+  .status-warning .sparkline-point {
+    fill: #FFC107;
+    stroke: white;
+    stroke-width: 1;
+  }
+
+  .status-danger .sparkline-path {
+    stroke: #F44336;
+  }
+
+  .status-danger .sparkline-point {
+    fill: #F44336;
+    stroke: white;
+    stroke-width: 1;
+  }
+
+  .status-info .sparkline-path {
+    stroke: #2196F3;
+  }
+
+  .status-info .sparkline-point {
+    fill: #2196F3;
+    stroke: white;
+    stroke-width: 1;
+  }
+
+  .status-neutral .sparkline-path {
+    stroke: #9E9E9E;
+  }
+
+  .status-neutral .sparkline-point {
+    fill: #9E9E9E;
+    stroke: white;
+    stroke-width: 1;
+  }
+
+  /* Sparkline area fill styles for better visualization */
+  .kpi-sparkline svg {
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
+  }
+</style>

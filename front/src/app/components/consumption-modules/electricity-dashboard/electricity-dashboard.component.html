@@ -1,0 +1,128 @@
+<!-- HTML corregido para ElectricityDashboardComponent -->
+<div class="electricity-dashboard theme-electricidad">
+  <!-- KPI Cards Grid -->
+  <div class="kpi-grid">
+    <ng-container *ngIf="currentKpiPage === 0">
+      <!-- KPI Pair 1: Bimonthly Consumption & Cost -->
+      <app-kpi-card *ngFor="let kpi of electricityKpis.slice(0, 2)"
+                    [title]="kpi.title"
+                    [primaryValue]="kpi.primaryValue"
+                    [primaryUnit]="kpi.primaryUnit"
+                    [secondaryValue]="kpi.secondaryValue"
+                    [secondaryUnit]="kpi.secondaryUnit"
+                    [status]="kpi.status"
+                    [trend]="kpi.trend"
+                    [footerText]="kpi.footerText"
+                    [sparklinePath]="kpi.sparklinePath"
+                    [sparklineEndPoint]="kpi.sparklineEndPoint">
+      </app-kpi-card>
+    </ng-container>
+
+    <ng-container *ngIf="currentKpiPage === 1">
+      <!-- KPI Pair 2: Moving Average & Benchmark -->
+      <app-kpi-card *ngFor="let kpi of electricityKpis.slice(2, 4)"
+                    [title]="kpi.title"
+                    [primaryValue]="kpi.primaryValue"
+                    [primaryUnit]="kpi.primaryUnit"
+                    [secondaryValue]="kpi.secondaryValue"
+                    [secondaryUnit]="kpi.secondaryUnit"
+                    [status]="kpi.status"
+                    [trend]="kpi.trend"
+                    [footerText]="kpi.footerText"
+                    [sparklinePath]="kpi.sparklinePath"
+                    [sparklineEndPoint]="kpi.sparklineEndPoint">
+      </app-kpi-card>
+    </ng-container>
+
+    <ng-container *ngIf="currentKpiPage === 2">
+      <!-- KPI Pair 3: Anomalies & CO2 Savings -->
+      <app-kpi-card *ngFor="let kpi of electricityKpis.slice(4, 6)"
+                    [title]="kpi.title"
+                    [primaryValue]="kpi.primaryValue"
+                    [primaryUnit]="kpi.primaryUnit"
+                    [secondaryValue]="kpi.secondaryValue"
+                    [secondaryUnit]="kpi.secondaryUnit"
+                    [status]="kpi.status"
+                    [trend]="kpi.trend"
+                    [footerText]="kpi.footerText"
+                    [sparklinePath]="kpi.sparklinePath"
+                    [sparklineEndPoint]="kpi.sparklineEndPoint">
+      </app-kpi-card>
+    </ng-container>
+  </div>
+
+  <!-- Pagination controls -->
+  <div class="pagination-container">
+    <app-kpi-pagination
+      [currentPage]="currentKpiPage"
+      [totalPages]="3"
+      (pageChange)="onPageChange($event)">
+    </app-kpi-pagination>
+  </div>
+
+  <!-- Action button for consumption registration -->
+  <div class="action-button">
+    <a [routerLink]="'/' + activeTabName" class="btn-register">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Registrar consumo de electricidad
+    </a>
+  </div>
+
+  <!-- Recommendations section -->
+  <div class="recommendations-section">
+    <h3>Recomendaciones</h3>
+
+    <div class="recommendations-grid">
+      <div class="recommendation-item">
+        <div class="recommendation-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24">
+            <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6A4.997 4.997 0 0 1 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="recommendation-content">
+          <h4>Utiliza focos LED</h4>
+          <p>Los focos LED consumen hasta 80% menos energía que los focos incandescentes tradicionales.</p>
+        </div>
+      </div>
+
+      <div class="recommendation-item">
+        <div class="recommendation-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24">
+            <path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42A6.92 6.92 0 0 1 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.12.92-4.04 2.42-5.33L6 5.17A8.974 8.974 0 0 0 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.72-1.2-5.17-3.17-6.83z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="recommendation-content">
+          <h4>Desconecta aparatos en standby</h4>
+          <p>Los aparatos en modo de espera pueden consumir hasta un 10% de tu electricidad total.</p>
+        </div>
+      </div>
+
+      <div class="recommendation-item">
+        <div class="recommendation-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24">
+            <path d="M15 11v2h-3v3h-2v-3H7v-2h3V8h2v3h3zM19 4h-4.18C14.4 2.84 13.3 2 12 2c-1.3 0-2.4.84-2.82 2H5c-.14 0-.27.01-.4.04-.39.08-.74.28-1.01.55-.18.18-.33.4-.43.64S3 5.72 3 6v14c0 .27.06.54.16.78s.25.45.43.64c.27.27.62.47 1.01.55.13.02.26.03.4.03h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-7-.25c.41 0 .75.34.75.75s-.34.75-.75.75-.75-.34-.75-.75.34-.75.75-.75zM19 20H5V6h14v14z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="recommendation-content">
+          <h4>Programa un mantenimiento regular</h4>
+          <p>Limpiar filtros y dar mantenimiento a tus electrodomésticos puede mejorar su eficiencia hasta un 30%.</p>
+        </div>
+      </div>
+
+      <div class="recommendation-item">
+        <div class="recommendation-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24">
+            <path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16.01H3V4.99h18v14.02zM8 16h2.5l1.5 1.5 1.5-1.5H16v-2.5l1.5-1.5-1.5-1.5V8h-2.5L12 6.5 10.5 8H8v2.5L6.5 12 8 13.5V16zm4-7c1.66 0 3 1.34 3 3s-1.34 3-3 3V9z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="recommendation-content">
+          <h4>Adapta la iluminación</h4>
+          <p>Usa luz natural cuando sea posible y ajusta la intensidad de la iluminación según la actividad.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

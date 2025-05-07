@@ -1,0 +1,42 @@
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  margin-bottom: 20px;
+}
+
+.dashboard-header h2 {
+  color: #333;
+  font-size: 1.8rem;
+}
+
+// Tab container theming
+.tabs-container {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+  overflow: hidden;
+}
+
+// Theme specific classes
+.theme-agua {
+  --theme-primary: #2196F3;
+  --theme-light: #E3F2FD;
+  --theme-dark: #1976D2;
+}
+
+.theme-electricidad {
+  --theme-primary: #FFC107;
+  --theme-light: #FFF8E1;
+  --theme-dark: #FFA000;
+}
+
+.theme-transporte {
+  --theme-primary: #4CAF50;
+  --theme-light: #E8F5E9;
+  --theme-dark: #388E3C;
+}

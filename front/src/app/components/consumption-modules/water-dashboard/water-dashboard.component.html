@@ -1,0 +1,135 @@
+<!-- HTML actualizado para WaterDashboardComponent -->
+<div class="water-dashboard">
+  <!-- KPI Cards Grid -->
+  <div class="kpi-grid">
+    <ng-container *ngIf="currentKpiPage === 0">
+      <!-- KPI Pair 1: Consumo Actual & Costo -->
+      <app-kpi-card *ngFor="let kpi of waterKpis.slice(0, 2)"
+                    [title]="kpi.title"
+                    [primaryValue]="kpi.primaryValue"
+                    [primaryUnit]="kpi.primaryUnit"
+                    [secondaryValue]="kpi.secondaryValue"
+                    [secondaryUnit]="kpi.secondaryUnit"
+                    [status]="kpi.status"
+                    [trend]="kpi.trend"
+                    [footerText]="kpi.footerText"
+                    [sparklinePath]="kpi.sparklinePath"
+                    [sparklineEndPoint]="kpi.sparklineEndPoint">
+      </app-kpi-card>
+    </ng-container>
+
+    <ng-container *ngIf="currentKpiPage === 1">
+      <!-- KPI Pair 2: Promedio Móvil & Comparativa -->
+      <app-kpi-card *ngFor="let kpi of waterKpis.slice(2, 4)"
+                    [title]="kpi.title"
+                    [primaryValue]="kpi.primaryValue"
+                    [primaryUnit]="kpi.primaryUnit"
+                    [secondaryValue]="kpi.secondaryValue"
+                    [secondaryUnit]="kpi.secondaryUnit"
+                    [status]="kpi.status"
+                    [trend]="kpi.trend"
+                    [footerText]="kpi.footerText"
+                    [sparklinePath]="kpi.sparklinePath"
+                    [sparklineEndPoint]="kpi.sparklineEndPoint">
+      </app-kpi-card>
+    </ng-container>
+
+    <ng-container *ngIf="currentKpiPage === 2">
+      <!-- KPI Pair 3: Anomalías & Ahorro de CO2 -->
+      <app-kpi-card *ngFor="let kpi of waterKpis.slice(4, 6)"
+                    [title]="kpi.title"
+                    [primaryValue]="kpi.primaryValue"
+                    [primaryUnit]="kpi.primaryUnit"
+                    [secondaryValue]="kpi.secondaryValue"
+                    [secondaryUnit]="kpi.secondaryUnit"
+                    [status]="kpi.status"
+                    [trend]="kpi.trend"
+                    [footerText]="kpi.footerText"
+                    [sparklinePath]="kpi.sparklinePath"
+                    [sparklineEndPoint]="kpi.sparklineEndPoint">
+      </app-kpi-card>
+    </ng-container>
+  </div>
+
+  <div class="pagination-container">
+    <app-kpi-pagination
+      [currentPage]="currentKpiPage"
+      [totalPages]="3"
+      (pageChange)="onPageChange($event)">
+    </app-kpi-pagination>
+  </div>
+
+  <!-- Action button for consumption registration -->
+  <div class="action-button">
+    <a [routerLink]="'/' + activeTabName" class="btn-register">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           style="margin-right: 8px;">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Registrar consumo de agua
+    </a>
+  </div>
+
+  <!-- HTML actualizado para recomendaciones de agua -->
+  <div class="recommendations-section">
+    <h3>Recomendaciones para ahorrar agua</h3>
+
+    <div class="recommendations-grid">
+      <div class="recommendation-item">
+        <div class="recommendation-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24">
+            <path
+              d="M12 2c-5.33 4.55-8 8.48-8 11.8 0 4.98 3.8 8.2 8 8.2s8-3.22 8-8.2c0-3.32-2.67-7.25-8-11.8zm0 18c-3.35 0-6-2.57-6-6.2 0-2.34 1.95-5.44 6-9.14 4.05 3.7 6 6.79 6 9.14 0 3.63-2.65 6.2-6 6.2zm-4-8c0 2.21 1.79 4 4 4s4-1.79 4-4-1.79-4-4-4-4 1.79-4 4z"
+              fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="recommendation-content">
+          <h4>Revisa fugas ocultas</h4>
+          <p>Las fugas pequeñas pueden sumar hasta 38 litros diarios de consumo innecesario. Revisa regularmente grifos
+            e inodoros.</p>
+        </div>
+      </div>
+
+      <div class="recommendation-item">
+        <div class="recommendation-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="recommendation-content">
+          <h4>Instala aireadores</h4>
+          <p>Los aireadores para grifos pueden reducir el consumo de agua hasta en un 50% sin afectar el confort durante
+            su uso.</p>
+        </div>
+      </div>
+
+      <div class="recommendation-item">
+        <div class="recommendation-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24">
+            <path d="M8 7h3v10H8zm5 0h3v10h-3z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="recommendation-content">
+          <h4>Baños más cortos</h4>
+          <p>Reducir el tiempo de ducha en solo 2 minutos puede ahorrar hasta 40 litros de agua por baño.</p>
+        </div>
+      </div>
+
+      <div class="recommendation-item">
+        <div class="recommendation-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24">
+            <path
+              d="M17 20H5V8h12m4-3h-5.18C15.4 3.84 14.3 3 13 3c-1.3 0-2.4.84-2.82 2H5C3.9 5 3 5.9 3 7v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2m-7-1c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1m0 15-5-5h3V9h4v5h3l-5 5z"
+              fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="recommendation-content">
+          <h4>Reutiliza el agua</h4>
+          <p>El agua utilizada en el lavado de verduras o frutas puede reutilizarse para regar plantas y jardines.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

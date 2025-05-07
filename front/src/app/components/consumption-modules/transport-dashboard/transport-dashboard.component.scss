@@ -1,0 +1,156 @@
+// KPI Grid layout
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+// Action button styling
+.action-button {
+  text-align: center;
+  margin: 30px 0;
+}
+
+.btn-register {
+  display: inline-block;
+  background-color: var(--theme-primary, #4CAF50); // Uses CSS variable from parent
+  color: white;
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-weight: bold;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: var(--theme-dark, #388E3C);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+  }
+}
+
+// Recommendations section
+.recommendations-section {
+  margin-top: 40px;
+  margin-bottom: 0;
+
+  h3 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    color: #333;
+  }
+}
+
+.recommendations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.recommendation-item {
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.recommendation-icon {
+  background-color: var(--theme-light, #E8F5E9); // Uses CSS variable from parent
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  flex-shrink: 0;
+
+  svg {
+    color: var(--theme-primary, #4CAF50); // Uses CSS variable from parent
+  }
+}
+
+.recommendation-content {
+  flex-grow: 1;
+
+  h4 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    color: #333;
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .recommendations-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* CSS para corregir el espacio blanco en sección de recomendaciones */
+.theme-transporte .recommendations-section {
+  background-color: var(--color-transporte-light, #E8F5E9);
+  border-radius: 16px;
+  margin-top: 40px;
+  margin-bottom: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  /* Extender el background hasta el final */
+  /* Aumentar el padding inferior */
+  padding: 28px 28px 40px;
+  width: 100%;
+  position: relative;
+  z-index: 0; /* Para evitar que sobreponga otros elementos */
+}
+
+/* Asegurar que no haya espacios entre elementos */
+.theme-transporte .recommendations-grid {
+  margin-bottom: 0;
+}
+
+/* Estilos adicionales para garantizar que no haya espacios blancos */
+.transport-dashboard {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Estilos para contenedor principal del dashboard */
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background-color: white;
+}
+
+/* Si hay algún espacio no controlado, forzar color de fondo */
+.theme-transporte::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px; /* Altura suficiente para cubrir cualquier espacio */
+  background-color: var(--color-transporte-light, #E8F5E9);
+  z-index: -1;
+}
+

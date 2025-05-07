@@ -1,0 +1,29 @@
+<div class="container">
+  <div class="dashboard-header">
+    <h2>Panel de Consumo</h2>
+  </div>
+
+  <!-- Tab navigation component -->
+  <div class="tabs-container" [ngClass]="'theme-' + activeTab">
+    <app-consumption-tab
+      [activeTab]="activeTab"
+      (tabChange)="setActiveTab($event)">
+    </app-consumption-tab>
+
+    <!-- Consumption modules -->
+    <app-water-dashboard
+      *ngIf="activeTab === 'agua'"
+      [activeTabName]="activeTabName">
+    </app-water-dashboard>
+
+    <app-electricity-dashboard
+      *ngIf="activeTab === 'electricidad'"
+      [activeTabName]="activeTabName">
+    </app-electricity-dashboard>
+
+    <app-transport-dashboard
+      *ngIf="activeTab === 'transporte'"
+      [activeTabName]="activeTabName">
+    </app-transport-dashboard>
+  </div>
+</div>

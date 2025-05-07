@@ -98,4 +98,628 @@ button {
   h3 {
     font-size: 1.5rem;
   }
-}/* You can add global styles to this file, and also import other style files */
+}
+
+/* You can add global styles to this file, and also import other style files */
+
+:root {
+  --color-agua-primary: #0288D1;
+  --color-agua-light: #B3E5FC;
+  --color-agua-dark: #01579B;
+  --color-agua-accent: #29B6F6;
+
+  --color-electricidad-primary: #FFB300;
+  --color-electricidad-light: #FFECB3;
+  --color-electricidad-dark: #FF8F00;
+  --color-electricidad-accent: #FFC107;
+
+  --color-transporte-primary: #43A047;
+  --color-transporte-light: #C8E6C9;
+  --color-transporte-dark: #2E7D32;
+  --color-transporte-accent: #4CAF50;
+
+  --color-positive: #43A047;
+  --color-negative: #E53935;
+  --color-neutral: #757575;
+  --color-warning: #FB8C00;
+  --color-info: #1E88E5;
+}
+
+/* Temas específicos para cada tipo de consumo */
+.theme-agua {
+  --theme-primary: var(--color-agua-primary);
+  --theme-light: var(--color-agua-light);
+  --theme-dark: var(--color-agua-dark);
+  --theme-accent: var(--color-agua-accent);
+}
+
+.theme-electricidad {
+  --theme-primary: var(--color-electricidad-primary);
+  --theme-light: var(--color-electricidad-light);
+  --theme-dark: var(--color-electricidad-dark);
+  --theme-accent: var(--color-electricidad-accent);
+}
+
+.theme-transporte {
+  --theme-primary: var(--color-transporte-primary);
+  --theme-light: var(--color-transporte-light);
+  --theme-dark: var(--color-transporte-dark);
+  --theme-accent: var(--color-transporte-accent);
+}
+
+/* Estilos específicos por tema para las pestañas */
+.theme-agua .tab.active {
+  color: var(--color-agua-primary);
+  border-bottom-color: var(--color-agua-primary);
+  font-weight: bold;
+}
+
+.theme-electricidad .tab.active {
+  color: var(--color-electricidad-primary);
+  border-bottom-color: var(--color-electricidad-primary);
+  font-weight: bold;
+}
+
+.theme-transporte .tab.active {
+  color: var(--color-transporte-primary);
+  border-bottom-color: var(--color-transporte-primary);
+  font-weight: bold;
+}
+
+/* Estilos para sparklines y visualizaciones por tema */
+.theme-agua .sparkline-path {
+  stroke: var(--color-agua-primary);
+}
+
+.theme-electricidad .sparkline-path {
+  stroke: var(--color-electricidad-primary);
+}
+
+.theme-transporte .sparkline-path {
+  stroke: var(--color-transporte-primary);
+}
+
+/* Estilos para botones de acción por tema */
+.theme-agua .btn-register {
+  background-color: var(--color-agua-primary);
+  color: white;
+}
+
+.theme-agua .btn-register:hover {
+  background-color: var(--color-agua-dark);
+}
+
+.theme-electricidad .btn-register {
+  background-color: var(--color-electricidad-primary);
+  color: white;
+}
+
+.theme-electricidad .btn-register:hover {
+  background-color: var(--color-electricidad-dark);
+}
+
+.theme-transporte .btn-register {
+  background-color: var(--color-transporte-primary);
+  color: white;
+}
+
+.theme-transporte .btn-register:hover {
+  background-color: var(--color-transporte-dark);
+}
+
+/* Estilos mejorados para KPI Cards */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  margin: 24px 0;
+}
+
+/* Estilos para tendencias positivas y negativas */
+.trend-positive {
+  color: var(--color-positive) !important;
+}
+
+.trend-negative {
+  color: var(--color-negative) !important;
+}
+
+/* Estilos para botón de registro general */
+.action-button {
+  text-align: center;
+  margin: 36px 0;
+}
+
+.btn-register {
+  display: inline-block;
+  padding: 14px 28px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-decoration: none;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.btn-register:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Estilos mejorados para sección de recomendaciones */
+.recommendations-section {
+  background-color: #f9f9f9;
+  border-radius: 16px;
+  padding: 24px;
+  margin-top: 40px;
+}
+
+.recommendations-section h3 {
+  font-size: 1.4rem;
+  margin-bottom: 24px;
+  color: #333;
+  text-align: center;
+  font-weight: 600;
+}
+
+.recommendations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.recommendation-item {
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.recommendation-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para íconos de recomendaciones por tema */
+.theme-agua .recommendation-icon {
+  background-color: var(--color-agua-light);
+}
+
+.theme-agua .recommendation-icon svg {
+  color: var(--color-agua-primary);
+}
+
+.theme-electricidad .recommendation-icon {
+  background-color: var(--color-electricidad-light);
+}
+
+.theme-electricidad .recommendation-icon svg {
+  color: var(--color-electricidad-primary);
+}
+
+.theme-transporte .recommendation-icon {
+  background-color: var(--color-transporte-light);
+}
+
+.theme-transporte .recommendation-icon svg {
+  color: var(--color-transporte-primary);
+}
+
+/* Estilos para secciones de recomendaciones - AGUA */
+.theme-agua .recommendations-section {
+  background-color: var(--color-agua-light);
+  border-radius: 16px;
+  padding: 28px;
+  margin-top: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.theme-agua .recommendations-section h3 {
+  font-size: 1.4rem;
+  margin-bottom: 24px;
+  color: var(--color-agua-dark);
+  text-align: center;
+  font-weight: 600;
+}
+
+.theme-agua .recommendation-item {
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+}
+
+.theme-agua .recommendation-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-left-color: var(--color-agua-primary);
+}
+
+.theme-agua .recommendation-icon {
+  background-color: var(--color-agua-light);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+
+.theme-agua .recommendation-icon svg {
+  color: var(--color-agua-primary);
+}
+
+.theme-agua .recommendation-content h4 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: var(--color-agua-dark);
+}
+
+/* Estilos para secciones de recomendaciones - ELECTRICIDAD */
+.theme-electricidad .recommendations-section {
+  background-color: var(--color-electricidad-light);
+  border-radius: 16px;
+  padding: 28px;
+  margin-top: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.theme-electricidad .recommendations-section h3 {
+  font-size: 1.4rem;
+  margin-bottom: 24px;
+  color: var(--color-electricidad-dark);
+  text-align: center;
+  font-weight: 600;
+}
+
+.theme-electricidad .recommendation-item {
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+}
+
+.theme-electricidad .recommendation-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-left-color: var(--color-electricidad-primary);
+}
+
+.theme-electricidad .recommendation-icon {
+  background-color: var(--color-electricidad-light);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+
+.theme-electricidad .recommendation-icon svg {
+  color: var(--color-electricidad-primary);
+}
+
+.theme-electricidad .recommendation-content h4 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: var(--color-electricidad-dark);
+}
+
+/* Estilos para secciones de recomendaciones - TRANSPORTE */
+.theme-transporte .recommendations-section {
+  background-color: var(--color-transporte-light);
+  border-radius: 16px;
+  padding: 28px;
+  margin-top: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.theme-transporte .recommendations-section h3 {
+  font-size: 1.4rem;
+  margin-bottom: 24px;
+  color: var(--color-transporte-dark);
+  text-align: center;
+  font-weight: 600;
+}
+
+.theme-transporte .recommendation-item {
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+}
+
+.theme-transporte .recommendation-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-left-color: var(--color-transporte-primary);
+}
+
+.theme-transporte .recommendation-icon {
+  background-color: var(--color-transporte-light);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+
+.theme-transporte .recommendation-icon svg {
+  color: var(--color-transporte-primary);
+}
+
+.theme-transporte .recommendation-content h4 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: var(--color-transporte-dark);
+}
+
+/* Estilos comunes para todas las tarjetas de recomendación */
+.recommendation-content p {
+  font-size: 0.95rem;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Estilos para los botones de página */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+/* CSS para fijar la posición de los botones de navegación */
+
+/* Contenedor principal para los controles de paginación */
+.pagination-container {
+  position: relative;
+  height: 80px; /* Altura fija para el contenedor */
+  margin: 30px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Estilos mejorados para controles de paginación */
+.kpi-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  position: absolute; /* Posición absoluta dentro del contenedor relativo */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Centrado perfecto */
+  width: 100%;
+  max-width: 300px; /* Ancho máximo para el control de paginación */
+  z-index: 10; /* Asegurar que esté por encima de otros elementos */
+}
+
+/* Mejorar la consistencia de altura de las tarjetas KPI */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  margin: 24px 0;
+}
+
+.kpi-card {
+  height: 300px; /* Altura fija para todas las tarjetas KPI */
+  display: flex;
+  flex-direction: column;
+  overflow: auto; /* Permitir scroll si el contenido es demasiado grande */
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  position: relative;
+  transition: all 0.3s ease;
+  border-left-width: 5px;
+  border-left-style: solid;
+}
+
+/* Mejorar la estructura de las tarjetas KPI para mantener consistencia */
+.kpi-body {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Evitar que el contenido desborde */
+}
+
+/* Estructura mejorada del dashboard para mantener consistencia visual */
+.water-dashboard,
+.electricity-dashboard,
+.transport-dashboard {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* Estilos específicos para botones de paginación */
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 50px;
+  background-color: #f5f5f5;
+  color: #333;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  white-space: nowrap; /* Evitar que el texto se rompa */
+}
+
+.prev-btn {
+  padding-left: 10px;
+}
+
+.next-btn {
+  padding-right: 10px;
+}
+
+.page-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Asegurarse de que el contenedor principal tenga suficiente espacio */
+.tabs-container {
+  position: relative;
+  min-height: 600px; /* Altura mínima para evitar saltos bruscos */
+}
+
+/* Adaptación responsive */
+@media (max-width: 768px) {
+  .kpi-card {
+    height: auto; /* En móviles, permitir altura automática */
+    min-height: 250px; /* Altura mínima para consistencia */
+  }
+
+  .pagination-container {
+    height: 60px; /* Reducir altura en móviles */
+  }
+}
+
+/* CSS para fijar la posición de los botones de navegación */
+
+/* Contenedor principal para los controles de paginación */
+.pagination-container {
+  position: relative;
+  height: 80px; /* Altura fija para el contenedor */
+  margin: 30px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Estilos mejorados para controles de paginación */
+.kpi-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  position: absolute; /* Posición absoluta dentro del contenedor relativo */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Centrado perfecto */
+  width: 100%;
+  max-width: 300px; /* Ancho máximo para el control de paginación */
+  z-index: 10; /* Asegurar que esté por encima de otros elementos */
+}
+
+/* Mejorar la consistencia de altura de las tarjetas KPI */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  margin: 24px 0;
+}
+
+.kpi-card {
+  height: 300px; /* Altura fija para todas las tarjetas KPI */
+  display: flex;
+  flex-direction: column;
+  overflow: auto; /* Permitir scroll si el contenido es demasiado grande */
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  position: relative;
+  transition: all 0.3s ease;
+  border-left-width: 5px;
+  border-left-style: solid;
+}
+
+/* Mejorar la estructura de las tarjetas KPI para mantener consistencia */
+.kpi-body {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Evitar que el contenido desborde */
+}
+
+/* Estructura mejorada del dashboard para mantener consistencia visual */
+.water-dashboard,
+.electricity-dashboard,
+.transport-dashboard {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* Estilos específicos para botones de paginación */
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 50px;
+  background-color: #f5f5f5;
+  color: #333;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  white-space: nowrap; /* Evitar que el texto se rompa */
+}
+
+.prev-btn {
+  padding-left: 10px;
+}
+
+.next-btn {
+  padding-right: 10px;
+}
+
+.page-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Asegurarse de que el contenedor principal tenga suficiente espacio */
+.tabs-container {
+  position: relative;
+  min-height: 600px; /* Altura mínima para evitar saltos bruscos */
+}
+
+/* Adaptación responsive */
+@media (max-width: 768px) {
+  .kpi-card {
+    height: auto; /* En móviles, permitir altura automática */
+    min-height: 250px; /* Altura mínima para consistencia */
+  }
+
+  .pagination-container {
+    height: 60px; /* Reducir altura en móviles */
+  }
+}
