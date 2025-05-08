@@ -26,7 +26,7 @@ import { KpiData } from '../../../models/kpi.model';
   ]
 })
 export class ElectricityDashboardComponent implements OnInit {
-  @Input() activeTabName: string = 'electricidad';
+  @Input() activeTabName: string = 'luz';
 
   electricityConsumption: ElectricityConsumption[] = [];
   electricityKpis: KpiData[] = [];
