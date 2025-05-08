@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BitacoraService } from '../../../services/bitacora.service';
 import { NavbarComponent } from '../../navbar/navbar.component';
 import { Bitacora, CATEGORIAS } from '../../../models/bitacora.model';
-import { catchError, finalize, of } from 'rxjs';
+import { catchError, filter, finalize, of, Subscription } from 'rxjs';
 
 /**
  * Component for displaying a list of all user's bitácoras
@@ -607,21 +607,56 @@ export class BitacoraListComponent implements OnInit {
   bitacoraToDelete: Bitacora | null = null;
   deleting = false;
 
-  constructor(private bitacoraService: BitacoraService) { }
+  // Subscriptions to manage
+  private bitacorasSubscription: Subscription | null = null;
+  private routerSubscription: Subscription | null = null;
+
+  constructor(
+    private bitacoraService: BitacoraService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
+    // Subscribe to router events to refresh data when navigating to this component
+    this.routerSubscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        console.log('Navigation completed, refreshing bitácoras list...');
+        this.loadBitacoras(true); // Force refresh on navigation
+      });
+
+    // Initial load
     this.loadBitacoras();
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscriptions to prevent memory leaks
+    if (this.bitacorasSubscription) {
+      this.bitacorasSubscription.unsubscribe();
+    }
+    
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
   }
 
   /**
    * Load bitácoras from the service
    * Handles loading state and error handling
    */
-  loadBitacoras(): void {
+  loadBitacoras(forceRefresh: boolean = false): void {
     this.loading = true;
     this.error = null;
 
-    this.bitacoraService.getAllBitacoras(true, this.selectedCategoria)
+    console.log(`Loading bitácoras... Force refresh: ${forceRefresh}, Selected categoria: ${this.selectedCategoria}`);
+
+    // Unsubscribe from previous subscription if exists
+    if (this.bitacorasSubscription) {
+      this.bitacorasSubscription.unsubscribe();
+    }
+
+    // Subscribe to the service observable
+    this.bitacorasSubscription = this.bitacoraService.getAllBitacoras(forceRefresh, this.selectedCategoria)
       .pipe(
         catchError(error => {
           this.error = error.message || 'Error al cargar las bitácoras';
@@ -630,6 +665,7 @@ export class BitacoraListComponent implements OnInit {
         finalize(() => this.loading = false)
       )
       .subscribe(bitacoras => {
+        console.log(`Received ${bitacoras.length} bitácoras from service`);
         this.bitacoras = bitacoras;
       });
   }
@@ -639,7 +675,7 @@ export class BitacoraListComponent implements OnInit {
    * Reloads bitácoras with the selected filter
    */
   onCategoriaFilterChange(): void {
-    this.loadBitacoras();
+    this.loadBitacoras(true); // Force refresh when filter changes
   }
 
   /**

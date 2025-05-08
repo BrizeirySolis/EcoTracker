@@ -213,17 +213,47 @@ export class BitacoraService {
    * @param id Bitácora ID
    * @returns Observable of the operation result
    */
-  deleteBitacora(id: number): Observable<void> {
+  deleteBitacora(id: number): Observable<boolean> {
+    // First, check if the bitácora exists in our local cache
+    const currentBitacoras = this.bitacorasSubject.value;
+    const bitacoraExists = currentBitacoras.some(b => b.id === id);
+    
+    if (!bitacoraExists) {
+      console.warn(`Attempting to delete bitácora ID ${id} which is not in local cache`);
+    }
+  
     return this.http.delete<void>(`${this.API_URL}/${id}`).pipe(
+      // Map to boolean for success indicator
+      map(() => true),
+      
+      // Update internal state on success
       tap(() => {
-        // Update the local cache
-        const currentBitacoras = this.bitacorasSubject.value;
-        const updatedBitacoras = currentBitacoras.filter(b => b.id !== id);
-        this.bitacorasSubject.next(updatedBitacoras);
+        console.log(`Bitácora ID ${id} deleted successfully on server`);
+        
+        // Only update the local cache if we have data
+        if (currentBitacoras.length > 0) {
+          const updatedBitacoras = currentBitacoras.filter(b => b.id !== id);
+          
+          // Force a new array reference to trigger change detection
+          this.bitacorasSubject.next([...updatedBitacoras]);
+          
+          console.log(`Local cache updated, removed bitácora ID ${id}`);
+          
+          // Force data loaded status to ensure subscribers get updated
+          this.dataLoaded = true;
+        }
       }),
+      
+      // Improved error handling
       catchError(error => {
         console.error(`Error deleting bitácora ID ${id}:`, error);
-        return throwError(() => new Error('Failed to delete bitácora. Please try again later.'));
+        
+        // If it's an authorization error, provide a specific message
+        if (error.status === 401 || error.status === 403) {
+          return throwError(() => new Error('Error de autorización. Por favor, inicie sesión nuevamente.'));
+        }
+        
+        return throwError(() => new Error('No se pudo eliminar la bitácora. Por favor, intente nuevamente.'));
       })
     );
   }

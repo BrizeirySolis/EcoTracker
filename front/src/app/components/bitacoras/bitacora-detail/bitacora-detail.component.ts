@@ -611,23 +611,42 @@ export class BitacoraDetailComponent implements OnInit {
     if (!this.bitacora || this.deleting) {
       return;
     }
-
+  
     this.deleting = true;
-
-    this.bitacoraService.deleteBitacora(this.bitacora.id!)
-      .pipe(
-        finalize(() => {
+    const bitacoraId = this.bitacora.id!;
+  
+    this.bitacoraService.deleteBitacora(bitacoraId)
+      .subscribe({
+        next: (success) => {
           this.deleting = false;
           this.showDeleteModal = false;
-        })
-      )
-      .subscribe({
-        next: () => {
-          // Navigate back to list on success
-          this.router.navigate(['/bitacoras']);
+          
+          if (success) {
+            // Forcefully navigate to the list page with skipLocationChange to avoid browser history issues
+            // This ensures a clean navigation without adding to browser history
+            this.router.navigateByUrl('/bitacoras', { skipLocationChange: true }).then(() => {
+              // Then navigate again normally to ensure the URL is correct
+              this.router.navigate(['/bitacoras']);
+            });
+          } else {
+            this.error = 'La operación de eliminación no pudo completarse correctamente';
+          }
         },
         error: (error) => {
+          this.deleting = false;
+          this.showDeleteModal = false;
           this.error = error.message || 'Error al eliminar la bitácora';
+          
+          // Log detailed error for debugging
+          console.error('Error al eliminar bitácora:', error);
+          
+          // If it's an authorization error, suggest logging in again
+          if (error.message && error.message.includes('autorización')) {
+            this.error += ' Por favor, inicie sesión nuevamente.';
+            
+            // Optional: Could auto-redirect to login page
+            // this.router.navigate(['/login']);
+          }
         }
       });
   }
