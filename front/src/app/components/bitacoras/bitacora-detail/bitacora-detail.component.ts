@@ -622,10 +622,10 @@ export class BitacoraDetailComponent implements OnInit {
           this.showDeleteModal = false;
           
           if (success) {
-            // Forcefully navigate to the list page with skipLocationChange to avoid browser history issues
-            // This ensures a clean navigation without adding to browser history
+            // Navegación de dos pasos para asegurar que el listado se actualice correctamente
+            // Primero, navegar con skipLocationChange para evitar problemas con el historial
             this.router.navigateByUrl('/bitacoras', { skipLocationChange: true }).then(() => {
-              // Then navigate again normally to ensure the URL is correct
+              // Luego, navegar normalmente para asegurar que la URL sea correcta
               this.router.navigate(['/bitacoras']);
             });
           } else {
@@ -637,15 +637,12 @@ export class BitacoraDetailComponent implements OnInit {
           this.showDeleteModal = false;
           this.error = error.message || 'Error al eliminar la bitácora';
           
-          // Log detailed error for debugging
+          // Log detallado del error para depuración
           console.error('Error al eliminar bitácora:', error);
           
-          // If it's an authorization error, suggest logging in again
+          // Si es un error de autorización, sugerir iniciar sesión nuevamente
           if (error.message && error.message.includes('autorización')) {
             this.error += ' Por favor, inicie sesión nuevamente.';
-            
-            // Optional: Could auto-redirect to login page
-            // this.router.navigate(['/login']);
           }
         }
       });
