@@ -2,7 +2,6 @@ package com.lilim.ecotracker.security.config;
 
 import com.lilim.ecotracker.security.jwt.AuthEntryPointJwt;
 import com.lilim.ecotracker.security.jwt.AuthTokenFilter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,11 +27,14 @@ import java.util.Arrays;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class WebSecurityConfig {
-    @Autowired
-    private UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
 
-    @Autowired
-    private AuthEntryPointJwt unauthorizedHandler;
+    private final AuthEntryPointJwt unauthorizedHandler;
+
+    public WebSecurityConfig(UserDetailsService userDetailsService, AuthEntryPointJwt unauthorizedHandler) {
+        this.userDetailsService = userDetailsService;
+        this.unauthorizedHandler = unauthorizedHandler;
+    }
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
@@ -99,7 +101,9 @@ public class WebSecurityConfig {
                                         "/luz",
                                         "/agua",
                                         "/transporte",
-                                        "/profile"
+                                        "/profile",
+                                        "/bitacoras",
+                                        "/bitacoras/**"
                                 ).permitAll()
                                 // Permitir acceso a imágenes de bitácoras
                                 .requestMatchers("/bitacoras-images/**").permitAll()

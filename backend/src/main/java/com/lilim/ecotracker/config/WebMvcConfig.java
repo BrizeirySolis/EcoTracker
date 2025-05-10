@@ -15,16 +15,20 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/**")
-                .addResourceLocations("classpath:/static/")  // Quitar "browser/"
+                .addResourceLocations("classpath:/static/")
                 .resourceChain(true)
                 .addResolver(new PathResourceResolver() {
                     @Override
                     protected Resource getResource(String resourcePath, Resource location) throws IOException {
                         Resource requestedResource = location.createRelative(resourcePath);
+                        // Solo servimos recursos estáticos reales o devolvemos index.html
                         if (requestedResource.exists() && requestedResource.isReadable()) {
                             return requestedResource;
                         }
-                        return new ClassPathResource("/static/index.html");  // Quitar "browser/"
+
+                        // Para todas las demás rutas, devolver index.html
+                        System.out.println("Recurso no encontrado, sirviendo index.html: " + resourcePath);
+                        return new ClassPathResource("/static/index.html");
                     }
                 });
     }

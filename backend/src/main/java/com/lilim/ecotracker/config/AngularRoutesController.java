@@ -14,7 +14,9 @@ public class AngularRoutesController {
             "/luz",
             "/agua",
             "/transporte",
-            "/profile"
+            "/profile",
+            "/bitacoras",
+            "/bitacoras/**",
     })
     public String forwardToAngularIndex() {
         return "forward:/index.html";  // Apunta directamente a index.html en la raíz de static
