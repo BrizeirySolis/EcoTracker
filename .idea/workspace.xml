@@ -5,57 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cb2804a2-090c-4504-a2de-eae87050b6cd" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.ebignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/application-prod.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-4OWZVSAM.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-5EO3PGLV.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-5G4M3VZ5.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-5ROVRLTX.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-7YUMQYRQ.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-CNPPGTUI.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-DJQADZLK.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-HOJPQXRU.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-J33BWB37.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-SN6VXKO3.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/main-YXUFDVNS.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/deploy.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/deploy/.ebextensions/00-options.config" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/deploy/.ebextensions/nginx/conf.d/proxy.conf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/deploy/Procfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/front/proxy.conf.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/front/src/environments/environment.prod.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/front/src/environments/environment.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/lilim/ecotracker/config/CorsConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/lilim/ecotracker/config/CorsConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/lilim/ecotracker/security/config/WebSecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/lilim/ecotracker/security/config/WebSecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-2MXOTPSK.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-37VLZZGU.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-WTXJWYYU.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-75RIGP6V.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-DFZ44USO.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-AAI2ELPW.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-AVN3W2U2.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-QHZEOANC.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-CNET65OF.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-FFV6L463.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-XDNELA5H.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-GCBFGGEC.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-GO23RQTW.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-WT7KZOEY.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-GYKT2POG.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-LRAL7NZY.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-MNNYSRKJ.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-PZRMPOMR.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-QSHLQNRC.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-WWWVEAFK.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-SJ6CHOCD.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-UA27M55P.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-UVGRHKAP.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-EAUNTU3R.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-UXZKH27H.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-ZHEJU3VR.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/main-VAOY5IHH.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/front/angular.json" beforeDir="false" afterPath="$PROJECT_DIR$/front/angular.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/front/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/front/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/front/src/app/services/auth.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/front/src/app/services/auth.service.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/front/src/app/services/bitacora.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/front/src/app/services/bitacora.service.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/front/src/app/services/consumption.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/front/src/app/services/consumption.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deploy.zip" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -164,7 +115,7 @@
       <workItem from="1744149725666" duration="92000" />
       <workItem from="1744659106549" duration="241000" />
       <workItem from="1744659386863" duration="1515000" />
-      <workItem from="1746932140397" duration="7459000" />
+      <workItem from="1746932140397" duration="7620000" />
     </task>
     <task id="LOCAL-00001" summary="Registro de hábitos.">
       <option name="closed" value="true" />

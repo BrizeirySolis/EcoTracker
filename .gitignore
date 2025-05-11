@@ -13,6 +13,7 @@ Thumbs.db
 # =============================
 # IntelliJ IDEA
 /.idea/
+.idea
 /*.iml
 # VS Code
 /.vscode/
