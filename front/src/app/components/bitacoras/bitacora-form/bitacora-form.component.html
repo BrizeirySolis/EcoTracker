@@ -92,6 +92,7 @@
 
       <!-- Right column - Image upload & additional fields -->
       <div class="form-column">
+        <!-- En bitacora-form.component.html -->
         <div class="form-group">
           <label class="form-label">Imagen</label>
           <app-image-upload
@@ -99,6 +100,9 @@
             (imageSelected)="onImageSelected($event)"
             (imageRemoved)="onImageRemoved()">
           </app-image-upload>
+          <small class="form-text text-muted" *ngIf="selectedImage && selectedImage.size > 1024 * 1024">
+            La imagen será optimizada automáticamente para mejorar el rendimiento.
+          </small>
         </div>
 
         <!-- Dynamic additional fields based on category -->

@@ -82,7 +82,7 @@ import { TransportUsage } from '../../models/consumption.model';
           </div>
 
           <div class="form-group">
-            <label for="cost">Costo <span class="required">*</span></label>
+            <label for="cost">Costo (solo si se ha cargado combustible o utilizó el transporte público) <span class="required">*</span></label>
             <input
               type="number"
               id="cost"

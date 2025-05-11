@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 /**
@@ -26,20 +26,9 @@ import { CommonModule } from '@angular/common';
           <circle cx="9" cy="9" r="2"></circle>
           <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
         </svg>
-        <p class="upload-text">
-          Arrastra y suelta una imagen aquí<br>
-          <span>o</span>
-        </p>
-        <button type="button" class="select-button" (click)="fileInput.click()">
+        <button type="button" class="select-button" (click)="openFileDialog()">
           Seleccionar imagen
         </button>
-        <input
-          #fileInput
-          type="file"
-          accept="image/*"
-          class="file-input"
-          (change)="onFileSelected($event)"
-          [attr.aria-label]="'Seleccionar imagen'">
       </div>
 
       <div *ngIf="imagePreview" class="image-preview-container">
@@ -52,7 +41,7 @@ import { CommonModule } from '@angular/common';
             </svg>
             Eliminar
           </button>
-          <button type="button" class="change-button" (click)="fileInput.nativeElement.click()">
+          <button type="button" class="change-button" (click)="openFileDialog()">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
             </svg>
@@ -65,6 +54,14 @@ import { CommonModule } from '@angular/common';
         {{ error }}
       </div>
 
+      <!-- Input de archivo oculto (fuera del *ngIf) -->
+      <input
+        #fileInput
+        type="file"
+        accept="image/*"
+        class="file-input"
+        (change)="onFileSelected($event)"
+        [attr.aria-label]="'Seleccionar imagen'">
     </div>
   `,
   styles: `
@@ -193,7 +190,7 @@ import { CommonModule } from '@angular/common';
     }
   `
 })
-export class ImageUploadComponent {
+export class ImageUploadComponent implements OnInit {
   @Input() existingImageUrl?: string;
   @Output() imageSelected = new EventEmitter<File>();
   @Output() imageRemoved = new EventEmitter<void>();
@@ -205,8 +202,8 @@ export class ImageUploadComponent {
   error: string | null = null;
   selectedFile: File | null = null;
 
-  // Maximum file size in bytes (5MB)
-  private readonly MAX_FILE_SIZE = 5 * 1024 * 1024;
+  // Maximum file size in bytes (15MB)
+  private readonly MAX_FILE_SIZE = 15 * 1024 * 1024;
   // Allowed file types
   private readonly ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
@@ -219,6 +216,16 @@ export class ImageUploadComponent {
   ngOnChanges() {
     if (this.existingImageUrl) {
       this.imagePreview = this.existingImageUrl;
+    }
+  }
+
+  /**
+   * Open file dialog programmatically
+   * This solves the issue with fileInput being undefined in template
+   */
+  openFileDialog(): void {
+    if (this.fileInput && this.fileInput.nativeElement) {
+      this.fileInput.nativeElement.click();
     }
   }
 
@@ -273,7 +280,7 @@ export class ImageUploadComponent {
     this.imageRemoved.emit();
 
     // Reset the file input to allow selecting the same file again
-    if (this.fileInput) {
+    if (this.fileInput && this.fileInput.nativeElement) {
       this.fileInput.nativeElement.value = '';
     }
   }
@@ -292,7 +299,7 @@ export class ImageUploadComponent {
 
     // Validate file size
     if (file.size > this.MAX_FILE_SIZE) {
-      this.error = 'La imagen es demasiado grande. El tamaño máximo permitido es 5MB.';
+      this.error = 'La imagen es demasiado grande. El tamaño máximo permitido es 15MB.';
       return;
     }
 
