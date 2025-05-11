@@ -5,16 +5,13 @@ import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
-/**
- * Service to manage all consumption data
- * Communicates with Spring Boot backend API
- */
 @Injectable({
   providedIn: 'root'
 })
 export class ConsumptionService {
-  private readonly API_URL = 'http://localhost:8080/api';
+  private readonly API_URL = environment.apiUrl;
 
   constructor(
     private http: HttpClient,

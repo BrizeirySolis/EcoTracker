@@ -1,0 +1,6 @@
+.git
+.idea
+node_modules
+target
+.mvn
+**/.DS_Store

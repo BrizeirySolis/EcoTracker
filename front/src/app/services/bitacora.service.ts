@@ -3,16 +3,13 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { Bitacora, Categoria, CATEGORIAS } from '../models/bitacora.model';
+import { environment } from '../../environments/environment';
 
-/**
- * Service for managing Bitácora operations
- * Handles all API interactions for environmental activity logs
- */
 @Injectable({
   providedIn: 'root'
 })
 export class BitacoraService {
-  private readonly API_URL = 'http://localhost:8080/api/bitacoras';
+  private readonly API_URL = `${environment.apiUrl}/bitacoras`;
 
   // Observable source for bitácoras data
   private bitacorasSubject = new BehaviorSubject<Bitacora[]>([]);
@@ -293,7 +290,7 @@ export class BitacoraService {
       return imagePath;
     }
 
-    return `http://localhost:8080/bitacoras-images/${imagePath}`;
+    return `${environment.apiUrl.replace('/api', '')}/bitacoras-images/${imagePath}`;
   }
 
   /**

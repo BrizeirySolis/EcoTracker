@@ -1,20 +1,33 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { User, LoginRequest, SignupRequest, AuthResponse } from '../models/auth.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_URL = 'http://localhost:8080/api/auth';
+  private readonly API_URL = `${environment.apiUrl}/auth`;
   private currentUserSubject: BehaviorSubject<User | null>;
   public currentUser: Observable<User | null>;
 
   constructor(private http: HttpClient) {
-    // Obtener el usuario del localStorage al iniciar
+
     const storedUser = localStorage.getItem('currentUser');
+
+    // Inicializar el BehaviorSubject con el usuario almacenado o null
+    this.currentUserSubject = new BehaviorSubject<User | null>(
+      storedUser ? JSON.parse(storedUser) : null
+    );
+
+    // Exponer el observable para que los componentes puedan suscribirse
+    this.currentUser = this.currentUserSubject.asObservable();
+
+    // Log para depuración
+    console.log('AuthService iniciado, usuario almacenado:',
+      storedUser ? JSON.parse(storedUser)?.username : 'ninguno');
 
     // Inicializar el BehaviorSubject con el usuario almacenado o null
     this.currentUserSubject = new BehaviorSubject<User | null>(

@@ -110,6 +110,8 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
+                    <executable>true</executable>
+                    <finalName>${project.artifactId}</finalName>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>

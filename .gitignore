@@ -28,6 +28,8 @@ Thumbs.db
 # Directorio de compilación y empaquetado
 /backend/target/
 /backend/*.jar
+/deploy/*.jar
+/deploy/*.zip
 /backend/*.war
 # Clases Java compiladas (por si acaso se salen de target)
 /backend/**/*.class
