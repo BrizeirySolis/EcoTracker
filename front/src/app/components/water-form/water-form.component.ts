@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { ConsumptionService } from '../../services/consumption.service';
@@ -8,6 +8,7 @@ import { WaterConsumption } from '../../models/consumption.model';
 
 /**
  * Component for recording water consumption data
+ * Includes validation of required fields and positive decimal values for cost
  */
 @Component({
   selector: 'app-water-form',
@@ -20,46 +21,68 @@ import { WaterConsumption } from '../../models/consumption.model';
       <div class="form-container">
         <h2>Agua</h2>
 
-        <div class="form-group">
-          <label for="consumption">Agua consumida (m3)</label>
-          <input
-            type="number"
-            id="consumption"
-            name="consumption"
-            [(ngModel)]="consumption.liters"
-            class="form-control"
-            required
-          >
-        </div>
+        <form #waterForm="ngForm" (ngSubmit)="saveConsumption(waterForm)">
+          <div class="form-group">
+            <label for="consumption">Agua consumida (m3) <span class="required">*</span></label>
+            <input
+              type="number"
+              id="consumption"
+              name="consumption"
+              [(ngModel)]="consumption.liters"
+              class="form-control"
+              required
+              min="0.01"
+              [class.is-invalid]="isSubmitted && (consumptionInput.invalid || consumptionInput.value <= 0)"
+              #consumptionInput="ngModel"
+            >
+            <div *ngIf="isSubmitted && (consumptionInput.invalid || consumptionInput.value <= 0)" class="error-message">
+              <div *ngIf="consumptionInput.errors?.['required']">El consumo de agua es obligatorio</div>
+              <div *ngIf="consumptionInput.value <= 0 && !consumptionInput.errors?.['required']">El consumo debe ser mayor que cero</div>
+            </div>
+          </div>
 
-        <div class="form-group">
-          <label for="date">Fecha</label>
-          <input
-            type="date"
-            id="date"
-            name="date"
-            [(ngModel)]="consumptionDate"
-            class="form-control"
-            required
-          >
-        </div>
+          <div class="form-group">
+            <label for="date">Fecha <span class="required">*</span></label>
+            <input
+              type="date"
+              id="date"
+              name="date"
+              [(ngModel)]="consumptionDate"
+              class="form-control"
+              required
+              [class.is-invalid]="isSubmitted && dateInput.invalid"
+              #dateInput="ngModel"
+            >
+            <div *ngIf="isSubmitted && dateInput.invalid" class="error-message">
+              <div *ngIf="dateInput.errors?.['required']">La fecha es obligatoria</div>
+            </div>
+          </div>
 
-        <div class="form-group">
-          <label for="cost">Costo</label>
-          <input
-            type="number"
-            id="cost"
-            name="cost"
-            [(ngModel)]="consumption.cost"
-            class="form-control"
-            required
-          >
-        </div>
+          <div class="form-group">
+            <label for="cost">Costo <span class="required">*</span></label>
+            <input
+              type="number"
+              id="cost"
+              name="cost"
+              [(ngModel)]="consumption.cost"
+              class="form-control"
+              required
+              min="0"
+              step="0.01"
+              [class.is-invalid]="isSubmitted && (costInput.invalid || costInput.value < 0)"
+              #costInput="ngModel"
+            >
+            <div *ngIf="isSubmitted && (costInput.invalid || costInput.value < 0)" class="error-message">
+              <div *ngIf="costInput.errors?.['required']">El costo es obligatorio</div>
+              <div *ngIf="costInput.value < 0 && !costInput.errors?.['required']">El costo debe ser un valor positivo</div>
+            </div>
+          </div>
 
-        <div class="button-group">
-          <button (click)="saveConsumption()" class="btn-save">Guardar</button>
-          <button (click)="cancel()" class="btn-cancel">Cancelar</button>
-        </div>
+          <div class="button-group">
+            <button type="submit" class="btn-save">Guardar</button>
+            <button type="button" (click)="cancel()" class="btn-cancel">Cancelar</button>
+          </div>
+        </form>
       </div>
     </div>
   `,
@@ -135,9 +158,28 @@ import { WaterConsumption } from '../../models/consumption.model';
     .btn-cancel:hover {
       background-color: #c62828;
     }
+
+    /* Nuevos estilos para validación */
+    .required {
+      color: #e53935;
+    }
+
+    .is-invalid {
+      border: 1px solid #e53935 !important;
+      background-color: #ffebee;
+    }
+
+    .error-message {
+      color: #e53935;
+      font-size: 0.875rem;
+      margin-top: 4px;
+      margin-left: 12px;
+    }
   `
 })
 export class WaterFormComponent {
+  @ViewChild('waterForm') waterForm!: NgForm;
+
   consumption: WaterConsumption = {
     liters: 0,
     date: new Date(),
@@ -145,6 +187,7 @@ export class WaterFormComponent {
   };
 
   consumptionDate: string = this.formatDate(new Date());
+  isSubmitted = false;
 
   constructor(
     private consumptionService: ConsumptionService,
@@ -152,9 +195,16 @@ export class WaterFormComponent {
   ) {}
 
   /**
-   * Save the water consumption data
+   * Save the water consumption data after validation
    */
-  saveConsumption(): void {
+  saveConsumption(form: NgForm): void {
+    this.isSubmitted = true;
+
+    // Validar formulario
+    if (form.invalid || this.consumption.liters <= 0 || this.consumption.cost < 0) {
+      return;
+    }
+
     // Update the date from the input field
     this.consumption.date = new Date(this.consumptionDate);
 

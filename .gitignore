@@ -1,2 +1,73 @@
-.vscode/
-.idea/
+# =============================
+# 1. Sistema operativo / Logs
+# =============================
+# Mac
+.DS_Store
+# Windows
+Thumbs.db
+# Archivos de log generados por aplicaciones
+*.log
+
+# =============================
+# 2. IDEs y editores
+# =============================
+# IntelliJ IDEA
+/.idea/
+/*.iml
+# VS Code
+/.vscode/
+/*.code-workspace
+# Eclipse
+.classpath
+.project
+.settings/
+
+# =============================
+# 3. Backend (Spring Boot + Maven)
+# =============================
+# Directorio de compilación y empaquetado
+/backend/target/
+/backend/*.jar
+/backend/*.war
+# Clases Java compiladas (por si acaso se salen de target)
+/backend/**/*.class
+# Fuentes generadas por annotation processors
+/backend/src/**/generated-sources/
+/backend/src/**/generated-test-sources/
+/backend/src/**/.apt_generated/
+
+# =============================
+# 4. Frontend (Angular / Node.js)
+# =============================
+# Dependencias
+/front/node_modules/
+/front/.pnp/
+/front/.pnp.js
+# Salidas de build
+/front/dist/
+/front/build/
+/front/tmp/
+/front/out-tsc/
+/front/coverage/
+/front/.angular/
+/front/.angular-cache/
+/front/prerendered-routes.json
+# Lockfiles de errores (npm/yarn/pnpm)
+/front/npm-debug.log*
+/front/yarn-debug.log*
+/front/yarn-error.log*
+/front/pnpm-debug.log*
+
+# =============================
+# 5. Archivos sensibles / Entornos
+# =============================
+# Variables de entorno
+.env
+.env.local
+.env.*.local
+
+# =============================
+# 6. Uploads / Imágenes locales
+# =============================
+# Carpeta donde almacenas JPG, PNG, etc.
+/backend/uploads/

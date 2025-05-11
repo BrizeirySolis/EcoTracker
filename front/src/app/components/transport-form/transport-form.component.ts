@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { ConsumptionService } from '../../services/consumption.service';
@@ -8,6 +8,7 @@ import { TransportUsage } from '../../models/consumption.model';
 
 /**
  * Component for recording transport usage data
+ * Includes validation of required fields and positive decimal values for cost
  */
 @Component({
   selector: 'app-transport-form',
@@ -20,53 +21,91 @@ import { TransportUsage } from '../../models/consumption.model';
       <div class="form-container">
         <h2>Transporte</h2>
 
-        <div class="form-group">
-          <label for="kilometers">Kilómetros recorridos</label>
-          <input
-            type="number"
-            id="kilometers"
-            name="kilometers"
-            [(ngModel)]="transport.kilometers"
-            class="form-control"
-            required
-          >
-        </div>
+        <form #transportForm="ngForm" (ngSubmit)="saveTransport(transportForm)">
+          <div class="form-group">
+            <label for="kilometers">Kilómetros recorridos <span class="required">*</span></label>
+            <input
+              type="number"
+              id="kilometers"
+              name="kilometers"
+              [(ngModel)]="transport.kilometers"
+              class="form-control"
+              required
+              min="0.01"
+              [class.is-invalid]="isSubmitted && (kilometersInput.invalid || kilometersInput.value <= 0)"
+              #kilometersInput="ngModel"
+            >
+            <div *ngIf="isSubmitted && (kilometersInput.invalid || kilometersInput.value <= 0)" class="error-message">
+              <div *ngIf="kilometersInput.errors?.['required']">Los kilómetros recorridos son obligatorios</div>
+              <div *ngIf="kilometersInput.value <= 0 && !kilometersInput.errors?.['required']">Los kilómetros deben ser mayores que cero</div>
+            </div>
+          </div>
 
-        <div class="form-group">
-          <label for="type">Tipo de transporte</label>
-          <select
-            id="type"
-            name="type"
-            [(ngModel)]="transport.transportType"
-            class="form-control"
-            required
-          >
-            <option value="car">Automóvil</option>
-            <option value="bus">Autobús</option>
-            <option value="bicycle">Bicicleta</option>
-            <option value="walk">Caminando</option>
-            <option value="other">Otro</option>
-          </select>
-        </div>
+          <div class="form-group">
+            <label for="type">Tipo de transporte <span class="required">*</span></label>
+            <select
+              id="type"
+              name="type"
+              [(ngModel)]="transport.transportType"
+              class="form-control"
+              required
+              [class.is-invalid]="isSubmitted && typeInput.invalid"
+              #typeInput="ngModel"
+            >
+              <option value="">Seleccionar tipo de transporte</option>
+              <option value="car">Automóvil</option>
+              <option value="bus">Autobús</option>
+              <option value="bicycle">Bicicleta</option>
+              <option value="walk">Caminando</option>
+              <option value="other">Otro</option>
+            </select>
+            <div *ngIf="isSubmitted && typeInput.invalid" class="error-message">
+              <div *ngIf="typeInput.errors?.['required']">El tipo de transporte es obligatorio</div>
+            </div>
+          </div>
 
-        <div class="form-group">
-          <label for="date">Fecha</label>
-          <input
-            type="date"
-            id="date"
-            name="date"
-            [(ngModel)]="transportDate"
-            class="form-control"
-            required
-          >
-        </div>
+          <div class="form-group">
+            <label for="date">Fecha <span class="required">*</span></label>
+            <input
+              type="date"
+              id="date"
+              name="date"
+              [(ngModel)]="transportDate"
+              class="form-control"
+              required
+              [class.is-invalid]="isSubmitted && dateInput.invalid"
+              #dateInput="ngModel"
+            >
+            <div *ngIf="isSubmitted && dateInput.invalid" class="error-message">
+              <div *ngIf="dateInput.errors?.['required']">La fecha es obligatoria</div>
+            </div>
+          </div>
 
+          <div class="form-group">
+            <label for="cost">Costo <span class="required">*</span></label>
+            <input
+              type="number"
+              id="cost"
+              name="cost"
+              [(ngModel)]="transport.cost"
+              class="form-control"
+              required
+              min="0"
+              step="0.01"
+              [class.is-invalid]="isSubmitted && (costInput.invalid || costInput.value < 0)"
+              #costInput="ngModel"
+            >
+            <div *ngIf="isSubmitted && (costInput.invalid || costInput.value < 0)" class="error-message">
+              <div *ngIf="costInput.errors?.['required']">El costo es obligatorio</div>
+              <div *ngIf="costInput.value < 0 && !costInput.errors?.['required']">El costo debe ser un valor positivo</div>
+            </div>
+          </div>
 
-
-        <div class="button-group">
-          <button (click)="saveTransport()" class="btn-save">Guardar</button>
-          <button (click)="cancel()" class="btn-cancel">Cancelar</button>
-        </div>
+          <div class="button-group">
+            <button type="submit" class="btn-save">Guardar</button>
+            <button type="button" (click)="cancel()" class="btn-cancel">Cancelar</button>
+          </div>
+        </form>
       </div>
     </div>
   `,
@@ -149,9 +188,28 @@ import { TransportUsage } from '../../models/consumption.model';
     .btn-cancel:hover {
       background-color: #c62828;
     }
+
+    /* Nuevos estilos para validación */
+    .required {
+      color: #e53935;
+    }
+
+    .is-invalid {
+      border: 1px solid #e53935 !important;
+      background-color: #ffebee;
+    }
+
+    .error-message {
+      color: #e53935;
+      font-size: 0.875rem;
+      margin-top: 4px;
+      margin-left: 12px;
+    }
   `
 })
 export class TransportFormComponent {
+  @ViewChild('transportForm') transportForm!: NgForm;
+
   transport: TransportUsage = {
     kilometers: 0,
     transportType: 'car',
@@ -160,6 +218,7 @@ export class TransportFormComponent {
   };
 
   transportDate: string = this.formatDate(new Date());
+  isSubmitted = false;
 
   constructor(
     private consumptionService: ConsumptionService,
@@ -167,9 +226,16 @@ export class TransportFormComponent {
   ) {}
 
   /**
-   * Save the transport usage data
+   * Save the transport usage data after validation
    */
-  saveTransport(): void {
+  saveTransport(form: NgForm): void {
+    this.isSubmitted = true;
+
+    // Validar formulario
+    if (form.invalid || this.transport.kilometers <= 0 || this.transport.cost < 0) {
+      return;
+    }
+
     // Update the date from the input field
     this.transport.date = new Date(this.transportDate);
 

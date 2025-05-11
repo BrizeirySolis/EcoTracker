@@ -1,10 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { Bitacora, Categoria, CATEGORIAS } from '../models/bitacora.model';
-import { AuthService } from './auth.service';
-import { Router } from '@angular/router';
 
 /**
  * Service for managing Bitácora operations
@@ -15,89 +13,134 @@ import { Router } from '@angular/router';
 })
 export class BitacoraService {
   private readonly API_URL = 'http://localhost:8080/api/bitacoras';
+
+  // Observable source for bitácoras data
   private bitacorasSubject = new BehaviorSubject<Bitacora[]>([]);
+
+  // Store filtered results for each category
+  private filteredBitacorasCache: Record<string, Bitacora[]> = {};
+
+  // Exposed observable for components to subscribe to
   public bitacoras$ = this.bitacorasSubject.asObservable();
+
+  // Track if data has been loaded to avoid redundant requests
   private dataLoaded = false;
 
-  constructor(
-    private http: HttpClient,
-    private authService: AuthService,
-    private router: Router
-  ) { }
+  constructor(private http: HttpClient) { }
 
-  private getAuthHeaders(): HttpHeaders {
-    // Obtener el usuario directamente del localStorage para mayor seguridad
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
-      if (user && user.token) {
-        const token = user.token.startsWith('Bearer ') ? user.token : `Bearer ${user.token}`;
-        console.log('Usando token para solicitud: ' + token.substring(0, 20) + '...');
-        return new HttpHeaders().set('Authorization', token);
-      }
-    }
-
-    console.warn('No se encontró token para la solicitud');
-    return new HttpHeaders();
-  }
-
+  /**
+   * Get all categorías available for bitácoras
+   * @returns Observable of categoría map
+   */
   getCategorias(): Observable<Record<string, string>> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<Record<string, string>>(`${this.API_URL}/categorias`, { headers }).pipe(
+    return this.http.get<Record<string, string>>(`${this.API_URL}/categorias`).pipe(
       catchError(error => {
-        console.error('Error al obtener categorías:', error);
-        if (error.status === 401) {
-          this.handleAuthError();
-        }
-        return throwError(() => new Error('Error al obtener categorías'));
+        console.error('Error fetching categorías:', error);
+        // Retornar un observable con el tipo correcto
+        return new Observable<Record<string, string>>(observer => {
+          observer.next(CATEGORIAS);
+          observer.complete();
+        });
       })
     );
-  }
-
-  getAllBitacoras(forceRefresh = false, categoria?: string): Observable<Bitacora[]> {
-    if (this.dataLoaded && !forceRefresh && !categoria) {
-      return this.bitacoras$;
-    }
-
-    let params = new HttpParams();
-    if (categoria) {
-      params = params.set('categoria', categoria);
-    }
-
-    const headers = this.getAuthHeaders();
-    console.log('Solicitando bitácoras con headers:', headers);
-
-    return this.http.get<Bitacora[]>(this.API_URL, { headers, params }).pipe(
-      map(bitacoras => this.processBitacorasDateFields(bitacoras)),
-      tap(bitacoras => {
-        if (!categoria) {
-          this.bitacorasSubject.next(bitacoras);
-          this.dataLoaded = true;
-        }
-      }),
-      catchError(error => {
-        console.error('Error al obtener bitácoras:', error);
-        if (error.status === 401) {
-          this.handleAuthError();
-        }
-        return throwError(() => new Error('Error al cargar las bitácoras'));
-      })
-    );
-  }
-
-  private handleAuthError(): void {
-    console.error('Error de autenticación detectado');
-    this.authService.logout();
-    this.router.navigate(['/login'], {
-      queryParams: { returnUrl: this.router.url }
-    });
   }
 
   /**
-   * Get a specific bitácora by ID
-   * @param id Bitácora ID
-   * @returns Observable of single bitácora
+   * Get all bitácoras, optionally filtered by categoría
+   * Caches results to avoid redundant API calls
+   * @param forceRefresh Force a refresh of data from API
+   * @param categoria Optional category filter
+   * @returns Observable of bitácoras array
    */
+  getAllBitacoras(forceRefresh = false, categoria?: string): Observable<Bitacora[]> {
+    console.log('⭐ getAllBitacoras - categoria:', categoria, 'forceRefresh:', forceRefresh); // Debug
+
+    // Si hay una categoría seleccionada
+    if (categoria && categoria !== '') {
+      console.log('🔍 Filtrando por categoría:', categoria); // Debug
+
+      // Comprobar si la categoría existe en el modelo
+      const categoriaExisteEnModelo = Object.keys(CATEGORIAS).includes(categoria);
+      console.log('Categoría existe en modelo:', categoriaExisteEnModelo, 'Categorías disponibles:', Object.keys(CATEGORIAS)); // Debug
+
+      // Si tenemos cache para esta categoría y no se solicita refresco, devolverlo
+      if (!forceRefresh && this.filteredBitacorasCache[categoria]) {
+        console.log('✅ Usando caché para categoría:', categoria); // Debug
+        return new Observable<Bitacora[]>(observer => {
+          observer.next(this.filteredBitacorasCache[categoria]);
+          observer.complete();
+        });
+      }
+
+      // En caso contrario, hacer la petición al servidor
+      let params = new HttpParams().set('categoria', categoria);
+
+      console.log('🌐 Petición HTTP con parámetros:', params.toString()); // Debug
+
+      return this.http.get<Bitacora[]>(this.API_URL, { params }).pipe(
+        map(bitacoras => {
+          console.log('📊 Datos recibidos del servidor:', bitacoras.length, 'bitácoras'); // Debug
+          console.log('Categorías recibidas:', bitacoras.map(b => b.categoria).join(', ')); // Debug
+          return this.processBitacorasDateFields(bitacoras);
+        }),
+        tap(bitacoras => {
+          // Guardar en el cache de esta categoría
+          this.filteredBitacorasCache[categoria] = bitacoras;
+          console.log('💾 Guardado en caché para categoría:', categoria); // Debug
+        }),
+        catchError(error => {
+          console.error('❌ Error fetching filtered bitácoras:', error);
+          return throwError(() => new Error('Failed to load bitácoras. Please try again later.'));
+        })
+      );
+    }
+
+    // Si no hay categoría, devolvemos todas las bitácoras
+    else {
+      console.log('🔍 Obteniendo todas las bitácoras');
+
+      // Return cached data if available and no refresh requested
+      if (this.dataLoaded && !forceRefresh) {
+        console.log('✅ Usando caché general de bitácoras'); // Debug
+        return this.bitacoras$;
+      }
+
+      // En caso contrario, hacemos la petición al servidor
+      console.log('🌐 Petición HTTP sin filtros'); // Debug
+
+      return this.http.get<Bitacora[]>(this.API_URL).pipe(
+        map(bitacoras => {
+          console.log('📊 Datos recibidos del servidor:', bitacoras.length, 'bitácoras'); // Debug
+          return this.processBitacorasDateFields(bitacoras);
+        }),
+        tap(bitacoras => {
+          this.bitacorasSubject.next(bitacoras);
+          this.dataLoaded = true;
+          console.log('💾 Guardado en caché general'); // Debug
+        }),
+        catchError(error => {
+          console.error('❌ Error fetching all bitácoras:', error);
+          return throwError(() => new Error('Failed to load bitácoras. Please try again later.'));
+        })
+      );
+    }
+  }
+
+  /**
+   * Filtrar manualmente las bitácoras por categoría
+   * @param bitacoras Lista de bitácoras a filtrar
+   * @param categoria Categoría por la que filtrar
+   * @returns Bitácoras filtradas
+   */
+  private filtrarBitacorasPorCategoria(bitacoras: Bitacora[], categoria: string): Bitacora[] {
+    if (!categoria || categoria === '') {
+      return bitacoras;
+    }
+
+    // Filtrar exactamente por el código de categoría
+    return bitacoras.filter(b => b.categoria === categoria);
+  }
+
   /**
    * Get a specific bitácora by ID
    * @param id Bitácora ID
@@ -105,24 +148,16 @@ export class BitacoraService {
    */
   getBitacoraById(id: number): Observable<Bitacora> {
     // Validar ID antes de hacer la solicitud
-    if (id === undefined || id === null || isNaN(id) || id <= 0) {
-      console.error('ID de bitácora inválido:', id, typeof id);
-      return throwError(() => new Error('ID de bitácora inválido'));
+    if (id === undefined || isNaN(id) || id <= 0) {
+      console.error('ID de bitácora inválido:', id);
+      return throwError(() => new Error('ID de bitácora inválido. Por favor, intente nuevamente con un ID válido.'));
     }
 
-    // Convertir explícitamente a número para asegurar el tipo correcto
-    const numericId = Number(id);
-
-    console.log('BitacoraService: Solicitando bitácora por ID:', numericId, typeof numericId);
-
-    return this.http.get<Bitacora>(`${this.API_URL}/${numericId}`).pipe(
-      map(bitacora => {
-        console.log('BitacoraService: Bitácora obtenida del servidor:', bitacora?.id, typeof bitacora?.id);
-        return this.processBitacoraDateFields(bitacora);
-      }),
+    return this.http.get<Bitacora>(`${this.API_URL}/${id}`).pipe(
+      map(bitacora => this.processBitacoraDateFields(bitacora)),
       catchError(error => {
-        console.error(`Error fetching bitácora ID ${numericId}:`, error);
-        return throwError(() => new Error('No se pudo cargar la bitácora solicitada. Por favor, intente de nuevo más tarde.'));
+        console.error(`Error fetching bitácora ID ${id}:`, error);
+        return throwError(() => new Error('Failed to load the requested bitácora. Please try again later.'));
       })
     );
   }
@@ -159,6 +194,9 @@ export class BitacoraService {
         // Update the local cache
         const currentBitacoras = this.bitacorasSubject.value;
         this.bitacorasSubject.next([newBitacora, ...currentBitacoras]);
+
+        // Invalidate filtered caches
+        this.filteredBitacorasCache = {};
       }),
       catchError(error => {
         console.error('Error creating bitácora:', error);
@@ -206,6 +244,9 @@ export class BitacoraService {
           updatedBitacoras[index] = updatedBitacora;
           this.bitacorasSubject.next(updatedBitacoras);
         }
+
+        // Invalidate filtered caches
+        this.filteredBitacorasCache = {};
       }),
       catchError(error => {
         console.error(`Error updating bitácora ID ${id}:`, error);
@@ -219,47 +260,20 @@ export class BitacoraService {
    * @param id Bitácora ID
    * @returns Observable of the operation result
    */
-  deleteBitacora(id: number): Observable<boolean> {
-    // First, check if the bitácora exists in our local cache
-    const currentBitacoras = this.bitacorasSubject.value;
-    const bitacoraExists = currentBitacoras.some(b => b.id === id);
-
-    if (!bitacoraExists) {
-      console.warn(`Attempting to delete bitácora ID ${id} which is not in local cache`);
-    }
-
+  deleteBitacora(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`).pipe(
-      // Map to boolean for success indicator
-      map(() => true),
-
-      // Update internal state on success
       tap(() => {
-        console.log(`Bitácora ID ${id} deleted successfully on server`);
+        // Update the local cache
+        const currentBitacoras = this.bitacorasSubject.value;
+        const updatedBitacoras = currentBitacoras.filter(b => b.id !== id);
+        this.bitacorasSubject.next(updatedBitacoras);
 
-        // Only update the local cache if we have data
-        if (currentBitacoras.length > 0) {
-          const updatedBitacoras = currentBitacoras.filter(b => b.id !== id);
-
-          // Force a new array reference to trigger change detection
-          this.bitacorasSubject.next([...updatedBitacoras]);
-
-          console.log(`Local cache updated, removed bitácora ID ${id}`);
-
-          // Force data loaded status to ensure subscribers get updated
-          this.dataLoaded = true;
-        }
+        // Invalidate filtered caches
+        this.filteredBitacorasCache = {};
       }),
-
-      // Improved error handling
       catchError(error => {
         console.error(`Error deleting bitácora ID ${id}:`, error);
-
-        // If it's an authorization error, provide a specific message
-        if (error.status === 401 || error.status === 403) {
-          return throwError(() => new Error('Error de autorización. Por favor, inicie sesión nuevamente.'));
-        }
-
-        return throwError(() => new Error('No se pudo eliminar la bitácora. Por favor, intente nuevamente.'));
+        return throwError(() => new Error('Failed to delete bitácora. Please try again later.'));
       })
     );
   }
@@ -287,33 +301,9 @@ export class BitacoraService {
    * @param bitacora Bitácora with string dates
    * @returns Bitácora with Date objects
    */
-  /**
-   * Process date fields in a bitácora to convert strings to Date objects
-   * Also ensures ID is a proper number
-   * @param bitacora Bitácora with string dates
-   * @returns Bitácora with Date objects and properly typed ID
-   */
   private processBitacoraDateFields(bitacora: any): Bitacora {
-    // Log para depuración
-    console.log('processBitacoraDateFields - ID antes de procesar:', bitacora?.id, typeof bitacora?.id);
-
-    // Procesamos el ID para asegurar que sea un número válido
-    let processedId: number | undefined = undefined;
-
-    if (bitacora?.id !== undefined && bitacora?.id !== null) {
-      processedId = Number(bitacora.id);
-      if (isNaN(processedId)) {
-        console.warn('ID de bitácora no es un número válido:', bitacora.id, typeof bitacora.id);
-        processedId = undefined;
-      }
-    }
-
-    // Log para depuración
-    console.log('processBitacoraDateFields - ID después de procesar:', processedId, typeof processedId);
-
     return {
       ...bitacora,
-      id: processedId, // ID procesado como número
       fecha: bitacora.fecha ? new Date(bitacora.fecha) : new Date(),
       createdAt: bitacora.createdAt ? new Date(bitacora.createdAt) : undefined
     };
@@ -326,5 +316,13 @@ export class BitacoraService {
    */
   private processBitacorasDateFields(bitacoras: any[]): Bitacora[] {
     return bitacoras.map(b => this.processBitacoraDateFields(b));
+  }
+
+  /**
+   * Reset cached data (useful after operaciones importantes)
+   */
+  resetCache(): void {
+    this.dataLoaded = false;
+    this.filteredBitacorasCache = {};
   }
 }

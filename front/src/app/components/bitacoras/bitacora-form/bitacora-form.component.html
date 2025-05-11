@@ -1,0 +1,189 @@
+<app-navbar></app-navbar>
+
+<div class="container">
+  <!-- Page header -->
+  <div class="page-header">
+    <h2>{{ isEditMode ? 'Editar' : 'Crear' }} Bitácora</h2>
+    <a [routerLink]="['/bitacoras']" class="btn-back">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Volver
+    </a>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>{{ isEditMode ? 'Cargando bitácora...' : 'Preparando formulario...' }}</p>
+  </div>
+
+  <!-- Error message -->
+  <div *ngIf="error" class="error-message">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <p>{{ error }}</p>
+    <button *ngIf="isEditMode" (click)="loadBitacora()" class="btn-retry">Reintentar</button>
+  </div>
+
+  <!-- Form -->
+  <form *ngIf="!loading && bitacoraForm" [formGroup]="bitacoraForm" (ngSubmit)="onSubmit()" class="bitacora-form">
+    <div class="form-grid">
+      <!-- Left column - Main fields -->
+      <div class="form-column">
+        <div class="form-group">
+          <label for="titulo" class="form-label">Título <span class="required">*</span></label>
+          <input
+            type="text"
+            id="titulo"
+            formControlName="titulo"
+            class="form-control"
+            [class.is-invalid]="isSubmitted && f['titulo'].errors">
+          <div *ngIf="isSubmitted && f['titulo'].errors" class="invalid-feedback">
+            <div *ngIf="f['titulo'].errors['required']">El título es obligatorio</div>
+            <div *ngIf="f['titulo'].errors['maxlength']">El título no puede exceder los 100 caracteres</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="descripcion" class="form-label">Descripción</label>
+          <textarea
+            id="descripcion"
+            formControlName="descripcion"
+            class="form-control"
+            rows="4"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="fecha" class="form-label">Fecha <span class="required">*</span></label>
+          <input
+            type="date"
+            id="fecha"
+            formControlName="fecha"
+            class="form-control"
+            [class.is-invalid]="isSubmitted && f['fecha'].errors">
+          <div *ngIf="isSubmitted && f['fecha'].errors" class="invalid-feedback">
+            <div *ngIf="f['fecha'].errors['required']">La fecha es obligatoria</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="categoria" class="form-label">Categoría <span class="required">*</span></label>
+          <select
+            id="categoria"
+            formControlName="categoria"
+            class="form-control"
+            [class.is-invalid]="isSubmitted && f['categoria'].errors"
+            (change)="onCategoriaChange()">
+            <option value="">Seleccionar categoría</option>
+            <option *ngFor="let cat of categoriaEntries" [value]="cat[0]">{{ cat[1] }}</option>
+          </select>
+          <div *ngIf="isSubmitted && f['categoria'].errors" class="invalid-feedback">
+            <div *ngIf="f['categoria'].errors['required']">La categoría es obligatoria</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column - Image upload & additional fields -->
+      <div class="form-column">
+        <div class="form-group">
+          <label class="form-label">Imagen</label>
+          <app-image-upload
+            [existingImageUrl]="existingImageUrl ?? undefined"
+            (imageSelected)="onImageSelected($event)"
+            (imageRemoved)="onImageRemoved()">
+          </app-image-upload>
+        </div>
+
+        <!-- Dynamic additional fields based on category -->
+        <div *ngIf="selectedCamposAdicionales.length > 0" class="additional-fields">
+          <h3>Información adicional</h3>
+
+          <div *ngFor="let campo of selectedCamposAdicionales" class="form-group"
+               [formGroupName]="'camposAdicionales'">
+            <label [for]="campo.nombre" class="form-label">
+              {{ campo.etiqueta }}
+              <span *ngIf="campo.requerido" class="required">*</span>
+            </label>
+
+            <!-- Text input -->
+            <input
+              *ngIf="campo.tipo === 'texto'"
+              [type]="'text'"
+              [id]="campo.nombre"
+              [formControlName]="campo.nombre"
+              class="form-control"
+              [placeholder]="campo.placeholder || ''"
+              [class.is-invalid]="isSubmitted && camposAdicionales[campo.nombre] && camposAdicionales[campo.nombre].errors">
+
+            <!-- Number input -->
+            <input
+              *ngIf="campo.tipo === 'numero'"
+              type="number"
+              [id]="campo.nombre"
+              [formControlName]="campo.nombre"
+              class="form-control"
+              [class.is-invalid]="isSubmitted && camposAdicionales[campo.nombre] && camposAdicionales[campo.nombre].errors">
+
+            <!-- Date input -->
+            <input
+              *ngIf="campo.tipo === 'fecha'"
+              type="date"
+              [id]="campo.nombre"
+              [formControlName]="campo.nombre"
+              class="form-control"
+              [class.is-invalid]="isSubmitted && camposAdicionales[campo.nombre] && camposAdicionales[campo.nombre].errors">
+
+            <!-- Select dropdown -->
+            <select
+              *ngIf="campo.tipo === 'seleccion'"
+              [id]="campo.nombre"
+              [formControlName]="campo.nombre"
+              class="form-control"
+              [class.is-invalid]="isSubmitted && camposAdicionales[campo.nombre] && camposAdicionales[campo.nombre].errors">
+              <option value="">Seleccionar</option>
+              <option *ngFor="let opcion of campo.opciones" [value]="opcion">{{ opcion }}</option>
+            </select>
+
+            <!-- Validation errors -->
+            <div *ngIf="isSubmitted && camposAdicionales && camposAdicionales[campo.nombre] && camposAdicionales[campo.nombre].errors" class="invalid-feedback">
+              <div *ngIf="camposAdicionales[campo.nombre].errors && camposAdicionales[campo.nombre].hasError('required')">
+                Este campo es obligatorio
+              </div>
+              <div *ngIf="camposAdicionales[campo.nombre].errors && camposAdicionales[campo.nombre].hasError('notNumber')">
+                Este campo debe contener un número
+              </div>
+              <div *ngIf="camposAdicionales[campo.nombre].errors && camposAdicionales[campo.nombre].hasError('notInteger')">
+                Este campo debe contener un número entero (sin decimales)
+              </div>
+              <div *ngIf="camposAdicionales[campo.nombre].errors && camposAdicionales[campo.nombre].hasError('notPositive')">
+                Este campo debe contener un número positivo mayor que cero
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form actions -->
+    <div class="form-actions">
+      <button type="button" class="btn-cancel" [routerLink]="['/bitacoras']">Cancelar</button>
+      <button type="submit" class="btn-save" [disabled]="submitting">
+        <svg *ngIf="!submitting" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+          <polyline points="17 21 17 13 7 13 7 21"></polyline>
+          <polyline points="7 3 7 8 15 8"></polyline>
+        </svg>
+        <span class="loading-spinner-small" *ngIf="submitting"></span>
+        {{ submitting ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </form>
+</div>

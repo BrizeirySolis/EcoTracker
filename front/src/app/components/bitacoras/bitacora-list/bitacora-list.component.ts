@@ -616,37 +616,45 @@ ngOnInit(): void {
       console.log(`Received ${bitacoras.length} bitácoras from service`);
       this.bitacoras = bitacoras;
     });
-  
+
   // Carga inicial de datos
   this.loadBitacoras();
 }
 
 // Si el componente no se está refrescando, asegúrate de que el servicio emita correctamente
 // Modifica loadBitacoras para forzar refresco:
-loadBitacoras(forceRefresh: boolean = false): void {
-  this.loading = true;
-  this.error = null;
+  /**
+   * Load bitácoras from the service
+   * Handles loading state and error handling
+   */
+  loadBitacoras(): void {
+    this.loading = true;
+    this.error = null;
 
-  this.bitacoraService.getAllBitacoras(true) // Forzar siempre actualización
-    .pipe(
-      catchError(error => {
-        this.error = error.message || 'Error al cargar las bitácoras';
-        return of([]);
-      }),
-      finalize(() => this.loading = false)
-    )
-    .subscribe(bitacoras => {
-      // No necesitas asignar this.bitacoras aquí, ya se actualiza vía la suscripción
-      console.log(`Loaded ${bitacoras.length} bitácoras`);
-    });
-}
+    console.log("Filtrando por categoría:", this.selectedCategoria); // Debug
+
+    this.bitacoraService.getAllBitacoras(true, this.selectedCategoria)
+      .pipe(
+        catchError(error => {
+          this.error = error.message || 'Error al cargar las bitácoras';
+          return of([]);
+        }),
+        finalize(() => this.loading = false)
+      )
+      .subscribe(bitacoras => {
+        console.log("Bitácoras recibidas:", bitacoras.length); // Debug
+        console.log("Categorías recibidas:", bitacoras.map(b => b.categoria).join(', ')); // Debug
+        this.bitacoras = bitacoras;
+      });
+  }
 
   /**
    * Handle category filter change
    * Reloads bitácoras with the selected filter
    */
   onCategoriaFilterChange(): void {
-    this.loadBitacoras(true); // Force refresh when filter changes
+    console.log("Categoría seleccionada:", this.selectedCategoria); // Debug
+    this.loadBitacoras();
   }
 
   /**

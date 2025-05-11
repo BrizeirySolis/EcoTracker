@@ -611,39 +611,23 @@ export class BitacoraDetailComponent implements OnInit {
     if (!this.bitacora || this.deleting) {
       return;
     }
-  
+
     this.deleting = true;
-    const bitacoraId = this.bitacora.id!;
-  
-    this.bitacoraService.deleteBitacora(bitacoraId)
-      .subscribe({
-        next: (success) => {
+
+    this.bitacoraService.deleteBitacora(this.bitacora.id!)
+      .pipe(
+        finalize(() => {
           this.deleting = false;
           this.showDeleteModal = false;
-          
-          if (success) {
-            // Navegación de dos pasos para asegurar que el listado se actualice correctamente
-            // Primero, navegar con skipLocationChange para evitar problemas con el historial
-            this.router.navigateByUrl('/bitacoras', { skipLocationChange: true }).then(() => {
-              // Luego, navegar normalmente para asegurar que la URL sea correcta
-              this.router.navigate(['/bitacoras']);
-            });
-          } else {
-            this.error = 'La operación de eliminación no pudo completarse correctamente';
-          }
+        })
+      )
+      .subscribe({
+        next: () => {
+          // Navigate back to list on success
+          this.router.navigate(['/bitacoras']);
         },
         error: (error) => {
-          this.deleting = false;
-          this.showDeleteModal = false;
           this.error = error.message || 'Error al eliminar la bitácora';
-          
-          // Log detallado del error para depuración
-          console.error('Error al eliminar bitácora:', error);
-          
-          // Si es un error de autorización, sugerir iniciar sesión nuevamente
-          if (error.message && error.message.includes('autorización')) {
-            this.error += ' Por favor, inicie sesión nuevamente.';
-          }
         }
       });
   }
