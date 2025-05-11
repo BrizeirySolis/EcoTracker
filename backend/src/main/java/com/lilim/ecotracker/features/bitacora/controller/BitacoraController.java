@@ -24,7 +24,7 @@ public class BitacoraController {
 
     private static final Logger logger = Logger.getLogger(BitacoraController.class.getName());
 
-    // Maximum file size (10MB) for initial upload
+    // Maximum file size (15MB) for initial upload
     private static final long MAX_UPLOAD_SIZE = 15 * 1024 * 1024;
 
     // Allowed image content types
