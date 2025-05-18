@@ -1,10 +1,7 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ImageCompressionService } from '../../../services/image-compression.service';
 
-/**
- * Reusable component for image upload functionality
- * Supports drag-and-drop, file selection, and image preview
- */
 @Component({
   selector: 'app-image-upload',
   standalone: true,
@@ -62,6 +59,12 @@ import { CommonModule } from '@angular/common';
         class="file-input"
         (change)="onFileSelected($event)"
         [attr.aria-label]="'Seleccionar imagen'">
+
+      <!-- Indicador de compresión -->
+      <div *ngIf="isCompressing" class="compression-indicator">
+        <div class="spinner"></div>
+        <span>Optimizando imagen...</span>
+      </div>
     </div>
   `,
   styles: `
@@ -188,6 +191,35 @@ import { CommonModule } from '@angular/common';
       color: #dc3545;
       font-size: 0.9rem;
     }
+
+    .compression-indicator {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      border-radius: 8px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(0, 179, 89, 0.2);
+      border-radius: 50%;
+      border-top-color: #00b359;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   `
 })
 export class ImageUploadComponent implements OnInit {
@@ -201,11 +233,14 @@ export class ImageUploadComponent implements OnInit {
   isDraggingOver = false;
   error: string | null = null;
   selectedFile: File | null = null;
+  isCompressing = false;
 
-  // Maximum file size in bytes (15MB)
-  private readonly MAX_FILE_SIZE = 15 * 1024 * 1024;
+  // Maximum file size in bytes (1MB para enviar directamente, mayores se comprimen)
+  private readonly MAX_FILE_SIZE = 1 * 1024 * 1024;
   // Allowed file types
   private readonly ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+  constructor(private imageCompressionService: ImageCompressionService) {}
 
   ngOnInit() {
     if (this.existingImageUrl) {
@@ -256,7 +291,7 @@ export class ImageUploadComponent implements OnInit {
     this.isDraggingOver = false;
 
     if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
-      this.processFile(event.dataTransfer.files[0]);
+      this.handleFile(event.dataTransfer.files[0]);
     }
   }
 
@@ -266,7 +301,39 @@ export class ImageUploadComponent implements OnInit {
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      this.processFile(input.files[0]);
+      this.handleFile(input.files[0]);
+    }
+  }
+
+  /**
+   * Process the selected file, compressing if necessary
+   */
+  async handleFile(file: File) {
+    // Validar tipo de archivo
+    if (!this.ALLOWED_TYPES.includes(file.type)) {
+      this.error = 'Formato no válido. Por favor, selecciona una imagen (JPEG, PNG, GIF o WebP).';
+      return;
+    }
+
+    try {
+      // Si el archivo es más grande que el límite, comprimir
+      if (file.size > this.MAX_FILE_SIZE) {
+        this.isCompressing = true;
+        console.log(`Compressing image: ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
+
+        // Comprimir a menos de 1MB para evitar problemas con el servidor
+        const compressedFile = await this.imageCompressionService.compressImage(file, 0.95);
+
+        console.log(`Compression complete: ${(compressedFile.size / (1024 * 1024)).toFixed(2)}MB`);
+        this.processFile(compressedFile);
+      } else {
+        this.processFile(file);
+      }
+    } catch (error) {
+      console.error('Error processing file:', error);
+      this.error = 'Error al procesar la imagen. Por favor, intenta con otra.';
+    } finally {
+      this.isCompressing = false;
     }
   }
 
@@ -291,15 +358,9 @@ export class ImageUploadComponent implements OnInit {
   private processFile(file: File) {
     this.error = null;
 
-    // Validate file type
-    if (!this.ALLOWED_TYPES.includes(file.type)) {
-      this.error = 'Formato no válido. Por favor, selecciona una imagen (JPEG, PNG, GIF o WebP).';
-      return;
-    }
-
-    // Validate file size
-    if (file.size > this.MAX_FILE_SIZE) {
-      this.error = 'La imagen es demasiado grande. El tamaño máximo permitido es 15MB.';
+    // Validate file size (post-compression if applicable)
+    if (file.size > 5 * 1024 * 1024) {
+      this.error = 'La imagen es demasiado grande. El tamaño máximo permitido es 5MB.';
       return;
     }
 

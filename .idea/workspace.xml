@@ -4,9 +4,41 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cb2804a2-090c-4504-a2de-eae87050b6cd" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="cb2804a2-090c-4504-a2de-eae87050b6cd" name="Changes" comment="Documentación añadida.">
+      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-5EBO6WDW.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-DZJOM554.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-PGSWVA4V.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-RCBTB2CG.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-SRF6OMH5.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-WQQHZ46V.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-XH4V6NSR.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/front/src/app/services/image-compression.service.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application-prod.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application-prod.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-4OWZVSAM.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-5EO3PGLV.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-FNBE2EJI.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-5G4M3VZ5.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-W4AZVQAT.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-5ROVRLTX.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-7YUMQYRQ.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-CNPPGTUI.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-DFZ44USO.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-7LIQ6UR3.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-DJQADZLK.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-EAUNTU3R.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-I7YVQWIT.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-HOJPQXRU.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-J33BWB37.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-LRAL7NZY.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-VNDPJNBL.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-QHZEOANC.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-ZK23IUWG.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-SN6VXKO3.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-FMM5U7V5.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-WT7KZOEY.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-ZHNWNGVP.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-WTXJWYYU.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-43LQXV7X.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-WWWVEAFK.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-U57CEONK.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-XDNELA5H.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/chunk-FV3CLQ4X.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/static/main-YXUFDVNS.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/main-2O5YIDI4.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deploy/.ebextensions/00-options.config" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/deploy/.ebextensions/nginx/conf.d/proxy.conf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/front/src/app/components/kpi-cards/kpi-card/kpi-card.component.scss" beforeDir="false" afterPath="$PROJECT_DIR$/front/src/app/components/kpi-cards/kpi-card/kpi-card.component.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/front/src/app/components/shared/image-upload/image-upload.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/front/src/app/components/shared/image-upload/image-upload.component.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,26 +81,26 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "master",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/alber/IdeaProjects/EcoTracker",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_interpreter_path": "node",
-    "nodejs_package_manager_path": "npm",
-    "npm.Angular CLI Server.executor": "Run",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "ts.external.directory.path": "C:\\Users\\alber_8qoulj5\\OneDrive\\Escritorio\\8vo sem\\tsp\\Code\\EcoTracker_Front\\node_modules\\typescript\\lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/alber/IdeaProjects/EcoTracker&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_interpreter_path&quot;: &quot;node&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;npm.Angular CLI Server.executor&quot;: &quot;Run&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\alber_8qoulj5\\OneDrive\\Escritorio\\8vo sem\\tsp\\Code\\EcoTracker_Front\\node_modules\\typescript\\lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/app/components" />
@@ -116,6 +148,7 @@
       <workItem from="1744659106549" duration="241000" />
       <workItem from="1744659386863" duration="1515000" />
       <workItem from="1746932140397" duration="7839000" />
+      <workItem from="1747175341929" duration="755000" />
     </task>
     <task id="LOCAL-00001" summary="Registro de hábitos.">
       <option name="closed" value="true" />
@@ -133,7 +166,15 @@
       <option name="project" value="LOCAL" />
       <updated>1744146679805</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Documentación añadida.">
+      <option name="closed" value="true" />
+      <created>1747175425164</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1747175425164</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -153,7 +194,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Registro de hábitos." />
     <MESSAGE value="Conexión con API." />
-    <option name="LAST_COMMIT_MESSAGE" value="Conexión con API." />
+    <MESSAGE value="Documentación añadida." />
+    <option name="LAST_COMMIT_MESSAGE" value="Documentación añadida." />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
