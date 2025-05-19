@@ -1,0 +1,140 @@
+<!-- front/src/app/components/metas/meta-list/meta-list.component.html -->
+
+<app-navbar></app-navbar>
+
+<div class="container">
+  <div class="metas-header">
+    <h2>Mis Metas Ambientales</h2>
+    <div class="actions">
+      <div class="filter-container">
+        <label for="tipo-filter">Filtrar por:</label>
+        <select
+          id="tipo-filter"
+          [(ngModel)]="selectedTipo"
+          (change)="onTipoFilterChange()"
+          class="tipo-select">
+          <option value="">Todas las categorías</option>
+          <option *ngFor="let tipo of tipoEntries" [value]="tipo[0]">{{ tipo[1] }}</option>
+        </select>
+      </div>
+      <a [routerLink]="['/metas/new']" class="btn-create">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Crear Meta
+      </a>
+    </div>
+  </div>
+
+  <!-- Loading indicator -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Cargando metas...</p>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!loading && metas.length === 0" class="empty-state">
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="8" y1="19" x2="8" y2="21"></line>
+      <line x1="16" y1="19" x2="16" y2="21"></line>
+      <circle cx="8" cy="6" r="3"></circle>
+      <circle cx="16" cy="6" r="3"></circle>
+      <line x1="8" y1="9" x2="8" y2="15"></line>
+      <line x1="16" y1="9" x2="16" y2="15"></line>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+    </svg>
+    <h3>No hay metas disponibles</h3>
+    <p *ngIf="selectedTipo">No hay metas en la categoría seleccionada.</p>
+    <p *ngIf="!selectedTipo">Comienza creando tu primera meta ambiental para monitorear tu progreso.</p>
+    <a [routerLink]="['/metas/new']" class="btn-create-empty">Crear primera meta</a>
+  </div>
+
+  <!-- Error message -->
+  <div *ngIf="error" class="error-message">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <p>{{ error }}</p>
+    <button (click)="loadMetas()" class="btn-retry">Reintentar</button>
+  </div>
+
+  <!-- Metas grid -->
+  <div *ngIf="!loading && metas.length > 0" class="metas-grid">
+    <div *ngFor="let meta of metas" class="meta-card">
+      <div class="meta-progress-bar">
+        <div class="progress-fill" [attr.data-category]="meta.tipo"
+             [style.width]="calcularPorcentaje(meta) + '%'"></div>
+      </div>
+      <div class="meta-category" [attr.data-category]="meta.tipo">
+        {{ getTipoName(meta.tipo) }}
+      </div>
+      <div class="meta-content">
+        <h3 class="meta-title">{{ meta.titulo }}</h3>
+        <p *ngIf="meta.descripcion" class="meta-description">
+          {{ truncateText(meta.descripcion, 100) }}
+        </p>
+        <div class="meta-info">
+          <div class="meta-dates">{{ meta.fechaInicio | date:'dd/MM/yyyy' }} - {{ meta.fechaFin | date:'dd/MM/yyyy' }}</div>
+          <div class="meta-value">Meta: {{ meta.valorObjetivo }} {{ getUnidadAbreviada(meta.unidad) }}</div>
+        </div>
+        <div class="meta-progress">
+          <span>Progreso actual</span>
+          <span class="progress-percentage">{{ calcularPorcentaje(meta).toFixed(0) }}%</span>
+        </div>
+        <div class="meta-actions">
+          <a [routerLink]="['/metas', meta.id]" class="btn-view">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            Ver
+          </a>
+          <a [routerLink]="['/metas/edit', meta.id]" class="btn-edit">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+            </svg>
+            Editar
+          </a>
+          <button (click)="confirmDelete(meta)" class="btn-delete">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirmation modal -->
+  <div *ngIf="showDeleteModal" class="modal-overlay">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Confirmar eliminación</h3>
+          <button (click)="cancelDelete()" class="btn-close">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>¿Estás seguro de que deseas eliminar la meta <strong>"{{ metaToDelete?.titulo }}"</strong>?</p>
+          <p class="warning-text">Esta acción no se puede deshacer.</p>
+        </div>
+        <div class="modal-footer">
+          <button (click)="cancelDelete()" class="btn-cancel">Cancelar</button>
+          <button (click)="deleteMeta()" class="btn-confirm-delete" [disabled]="deleting">
+            <span *ngIf="!deleting">Eliminar</span>
+            <span *ngIf="deleting">Eliminando...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

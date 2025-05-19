@@ -1,0 +1,212 @@
+<!-- front/src/app/components/metas/meta-form/meta-form.component.html -->
+
+<app-navbar></app-navbar>
+
+<div class="container">
+  <!-- Page header -->
+  <div class="page-header">
+    <h2>{{ isEditMode ? 'Editar' : 'Crear' }} Meta</h2>
+    <a [routerLink]="['/metas']" class="btn-back">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Volver
+    </a>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>{{ isEditMode ? 'Cargando meta...' : 'Preparando formulario...' }}</p>
+  </div>
+
+  <!-- Error message -->
+  <div *ngIf="error" class="error-message">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <p>{{ error }}</p>
+    <button *ngIf="isEditMode" (click)="loadMeta()" class="btn-retry">Reintentar</button>
+  </div>
+
+  <!-- Form -->
+  <form *ngIf="!loading && metaForm" [formGroup]="metaForm" (ngSubmit)="onSubmit()" class="meta-form">
+    <div class="form-grid">
+      <!-- Left column - Main fields -->
+      <div class="form-column">
+        <div class="form-group">
+          <label for="titulo" class="form-label">Título <span class="required">*</span></label>
+          <input
+            type="text"
+            id="titulo"
+            formControlName="titulo"
+            class="form-control"
+            [class.is-invalid]="isSubmitted && f['titulo'].errors">
+          <div *ngIf="isSubmitted && f['titulo'].errors" class="invalid-feedback">
+            <div *ngIf="f['titulo'].errors['required']">El título es obligatorio</div>
+            <div *ngIf="f['titulo'].errors['maxlength']">El título no puede exceder los 100 caracteres</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="descripcion" class="form-label">Descripción</label>
+          <textarea
+            id="descripcion"
+            formControlName="descripcion"
+            class="form-control"
+            rows="4"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="tipo" class="form-label">Tipo <span class="required">*</span></label>
+          <select
+            id="tipo"
+            formControlName="tipo"
+            class="form-control"
+            [class.is-invalid]="isSubmitted && f['tipo'].errors"
+            (change)="onTipoChange()">
+            <option value="">Seleccionar tipo</option>
+            <option *ngFor="let tipo of tipoEntries" [value]="tipo[0]">{{ tipo[1] }}</option>
+          </select>
+          <div *ngIf="isSubmitted && f['tipo'].errors" class="invalid-feedback">
+            <div *ngIf="f['tipo'].errors['required']">El tipo de meta es obligatorio</div>
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="metricasDisponibles.length > 0">
+          <label for="metrica" class="form-label">Métrica <span class="required">*</span></label>
+          <select
+            id="metrica"
+            formControlName="metrica"
+            class="form-control"
+            [class.is-invalid]="isSubmitted && f['metrica'].errors"
+            (change)="onMetricaChange()">
+            <option value="">Seleccionar métrica</option>
+            <option *ngFor="let metrica of metricasDisponibles" [value]="metrica.metrica">
+              {{ metrica.descripcion }}
+            </option>
+          </select>
+          <div *ngIf="isSubmitted && f['metrica'].errors" class="invalid-feedback">
+            <div *ngIf="f['metrica'].errors['required']">La métrica es obligatoria</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column - Values and dates -->
+      <div class="form-column">
+        <div class="form-group">
+          <label for="valorObjetivo" class="form-label">Valor objetivo <span class="required">*</span></label>
+          <input
+            type="number"
+            id="valorObjetivo"
+            formControlName="valorObjetivo"
+            class="form-control"
+            [class.is-invalid]="isSubmitted && f['valorObjetivo'].errors"
+            step="0.01"
+            min="0">
+          <div *ngIf="isSubmitted && f['valorObjetivo'].errors" class="invalid-feedback">
+            <div *ngIf="f['valorObjetivo'].errors['required']">El valor objetivo es obligatorio</div>
+            <div *ngIf="f['valorObjetivo'].errors['min']">El valor objetivo debe ser mayor que cero</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="unidad" class="form-label">Unidad <span class="required">*</span></label>
+          <select
+            id="unidad"
+            formControlName="unidad"
+            class="form-control"
+            [class.is-invalid]="isSubmitted && f['unidad'].errors">
+            <option value="">Seleccionar unidad</option>
+            <option *ngFor="let unidad of unidadesDisponibles" [value]="unidad.value">
+              {{ unidad.label }}
+            </option>
+          </select>
+          <div *ngIf="isSubmitted && f['unidad'].errors" class="invalid-feedback">
+            <div *ngIf="f['unidad'].errors['required']">La unidad es obligatoria</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="fechaInicio" class="form-label">Fecha inicio <span class="required">*</span></label>
+          <input
+            type="date"
+            id="fechaInicio"
+            formControlName="fechaInicio"
+            class="form-control"
+            [class.is-invalid]="isSubmitted && f['fechaInicio'].errors">
+          <div *ngIf="isSubmitted && f['fechaInicio'].errors" class="invalid-feedback">
+            <div *ngIf="f['fechaInicio'].errors['required']">La fecha de inicio es obligatoria</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="fechaFin" class="form-label">Fecha fin <span class="required">*</span></label>
+          <input
+            type="date"
+            id="fechaFin"
+            formControlName="fechaFin"
+            class="form-control"
+            [class.is-invalid]="isSubmitted && f['fechaFin'].errors">
+          <div *ngIf="isSubmitted && f['fechaFin'].errors" class="invalid-feedback">
+            <div *ngIf="f['fechaFin'].errors['required']">La fecha de fin es obligatoria</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="tipoEvaluacion" class="form-label">Tipo de evaluación <span class="required">*</span></label>
+          <select
+            id="tipoEvaluacion"
+            formControlName="tipoEvaluacion"
+            class="form-control"
+            [class.is-invalid]="isSubmitted && f['tipoEvaluacion'].errors">
+            <option value="automatica">Automática (basada en consumos registrados)</option>
+            <option value="manual">Manual (actualización directa)</option>
+          </select>
+          <div *ngIf="isSubmitted && f['tipoEvaluacion'].errors" class="invalid-feedback">
+            <div *ngIf="f['tipoEvaluacion'].errors['required']">El tipo de evaluación es obligatorio</div>
+          </div>
+          <small class="form-text text-muted" *ngIf="f['tipoEvaluacion'].value === 'automatica'">
+            El progreso se actualizará automáticamente según tus registros de consumo.
+          </small>
+          <small class="form-text text-muted" *ngIf="f['tipoEvaluacion'].value === 'manual'">
+            Deberás actualizar manualmente el progreso de esta meta.
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recomendaciones (si están disponibles) -->
+    <div class="recommendations-section" *ngIf="recommendations.length > 0">
+      <h3>Recomendaciones basadas en tu historial</h3>
+      <div class="recommendations-list">
+        <div *ngFor="let rec of recommendations" class="recommendation-item">
+          <button type="button" class="btn-recommendation" (click)="applyRecommendation(rec)">
+            <span class="recommendation-title">{{ rec.descripcion }}</span>
+            <span class="recommendation-value">{{ rec.valor }} {{ getUnidadAbreviada(rec.unidad) }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form actions -->
+    <div class="form-actions">
+      <button type="button" class="btn-cancel" [routerLink]="['/metas']">Cancelar</button>
+      <button type="submit" class="btn-save" [disabled]="submitting">
+        <svg *ngIf="!submitting" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+          <polyline points="17 21 17 13 7 13 7 21"></polyline>
+          <polyline points="7 3 7 8 15 8"></polyline>
+        </svg>
+        <span class="loading-spinner-small" *ngIf="submitting"></span>
+        {{ submitting ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </form>
+</div>
