@@ -254,4 +254,18 @@ export class MetaService {
       })
     );
   }
+
+  refreshMetaProgress(id: number): Observable<Meta> {
+    return this.http.get<Meta>(`${this.API_URL}/${id}/refresh`).pipe(
+      map(meta => this.processMetaDateFields(meta)),
+      tap(() => {
+        // Actualizar caché local si es necesario
+        this.resetCache();
+      }),
+      catchError(error => {
+        console.error(`Error refreshing meta progress ${id}:`, error);
+        return throwError(() => new Error('Error al actualizar el progreso. Por favor, inténtalo de nuevo.'));
+      })
+    );
+  }
 }

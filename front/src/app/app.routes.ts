@@ -75,6 +75,26 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'metas',
+    loadComponent: () => import('./components/metas/meta-list/meta-list.component').then(m => m.MetaListComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'metas/new',
+    loadComponent: () => import('./components/metas/meta-form/meta-form.component').then(m => m.MetaFormComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'metas/edit/:id',
+    loadComponent: () => import('./components/metas/meta-form/meta-form.component').then(m => m.MetaFormComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'metas/:id',
+    loadComponent: () => import('./components/metas/meta-detail/meta-detail.component').then(m => m.MetaDetailComponent),
+    canActivate: [AuthGuard]
+  },
+  {
     path: '**',
     redirectTo: '/home'
   }

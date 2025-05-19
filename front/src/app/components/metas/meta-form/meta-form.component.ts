@@ -175,6 +175,8 @@ export class MetaFormComponent implements OnInit {
    * Actualizar unidades disponibles según el tipo
    */
   updateUnidadesDisponibles(tipo: string): void {
+    console.log('Actualizando unidades para tipo:', tipo);
+
     // Creamos un conjunto de unidades únicas para este tipo
     const unidadesUnicas = new Set<string>();
 
@@ -185,11 +187,15 @@ export class MetaFormComponent implements OnInit {
       });
     }
 
+    console.log('Unidades únicas encontradas:', Array.from(unidadesUnicas));
+
     // Convertimos a array de opciones para el select
     this.unidadesDisponibles = Array.from(unidadesUnicas).map(unidad => ({
       value: unidad,
       label: UNIDADES_META[unidad] || unidad
     }));
+
+    console.log('Opciones para el dropdown:', this.unidadesDisponibles);
   }
 
   /**
@@ -214,6 +220,7 @@ export class MetaFormComponent implements OnInit {
     const tipo = this.f['tipo'].value;
     if (tipo) {
       this.updateMetricasDisponibles(tipo);
+      this.updateUnidadesDisponibles(tipo);
       this.loadRecommendations(tipo);
     }
   }

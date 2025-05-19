@@ -17,6 +17,10 @@ public class AngularRoutesController {
             "/profile",
             "/bitacoras",
             "/bitacoras/**",
+            "/metas",
+            "/metas/new",
+            "/metas/edit/**",
+            "/metas/**"
     })
     public String forwardToAngularIndex() {
         return "forward:/index.html";  // Apunta directamente a index.html en la raíz de static

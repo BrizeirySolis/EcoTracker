@@ -107,7 +107,11 @@ public class WebSecurityConfig {
                                         "/transporte",
                                         "/profile",
                                         "/bitacoras",
-                                        "/bitacoras/**"
+                                        "/bitacoras/**",
+                                        "/metas",
+                                        "/metas/new",
+                                        "/metas/edit/**",
+                                        "/metas/**"
                                 ).permitAll()
                                 // Permitir acceso a imágenes de bitácoras
                                 .requestMatchers("/bitacoras-images/**").permitAll()
