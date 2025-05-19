@@ -235,6 +235,7 @@ public class MetaController {
                 .fechaFin(meta.getFechaFin())
                 .estado(meta.getEstado())
                 .valorActual(meta.getValorActual())
+                .valorInicial(meta.getValorInicial())
                 .tipoEvaluacion(meta.getTipoEvaluacion())
                 .createdAt(meta.getCreatedAt())
                 .updatedAt(meta.getUpdatedAt())
