@@ -217,18 +217,29 @@ export class MetaDetailComponent implements OnInit {
   }
 
   forceRefresh(): void {
-    this.loading = true;
+    // Verificar que la meta existe antes de intentar actualizar
+    if (!this.meta || !this.meta.id) {
+      this.error = 'No se puede actualizar: la meta no está cargada correctamente';
+      return;
+    }
 
-    this.metaService.refreshMetaProgress(this.meta!.id!)
+    this.loading = true;
+    console.log("Iniciando actualización forzada para meta ID:", this.meta.id);
+
+    this.metaService.refreshMetaProgress(this.meta.id)
       .pipe(
         finalize(() => this.loading = false)
       )
       .subscribe({
         next: (meta) => {
+          console.log("Meta actualizada:", meta);
           this.meta = meta;
-          this.newValorActual = meta.valorActual;
+
+          // Asegurar que valorActual es un número definido
+          this.newValorActual = meta.valorActual ?? 0; // Usa 0 como valor predeterminado si es undefined
         },
         error: (error) => {
+          console.error("Error al actualizar la meta:", error);
           this.error = error.message || 'Error al actualizar la meta';
         }
       });

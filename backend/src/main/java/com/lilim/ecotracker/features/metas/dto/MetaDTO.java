@@ -26,6 +26,7 @@ public class MetaDTO {
     private LocalDateTime fechaFin;
     private String estado;
     private Double valorActual;
+    private Double valorInicial; // Nuevo campo
     private String tipoEvaluacion;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

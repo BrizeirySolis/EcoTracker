@@ -8,12 +8,16 @@ export interface Meta {
   descripcion?: string;
   tipo: string;
   valorObjetivo: number;
+  valorActual: number;
+  valorInicial?: number;
   unidad: string;
   fechaInicio: Date;
   fechaFin: Date;
   estado: 'en_progreso' | 'completada' | 'fallida';
-  valorActual: number;
+  metrica?: string;
+  tipoEvaluacion?: string;
   createdAt?: Date;
+  updatedAt?: Date;
 }
 
 /**
@@ -104,21 +108,91 @@ export const METRICAS_POR_TIPO: Record<string, {
  * @returns Porcentaje de progreso (0-100)
  */
 export function calcularPorcentajeMeta(meta: Meta): number {
-  // Para metas de reducción, el progreso es inverso
-  const esReduccion = meta.tipo !== 'transporte' &&
-    meta.valorObjetivo < meta.valorActual;
-
-  if (esReduccion) {
-    // Para metas de reducción, calculamos cuánto ha reducido del objetivo
-    const valorInicial = meta.valorActual * 2 - meta.valorObjetivo; // Estimación del valor inicial
-    const reduccionActual = valorInicial - meta.valorActual;
-    const reduccionObjetivo = valorInicial - meta.valorObjetivo;
-
-    return Math.min(100, Math.max(0, (reduccionActual / reduccionObjetivo) * 100));
-  } else {
-    // Para metas de incremento o valores absolutos
-    return Math.min(100, Math.max(0, (meta.valorActual / meta.valorObjetivo) * 100));
+  // Si faltan valores necesarios, retornar 0
+  if (!meta || meta.valorActual === undefined || meta.valorObjetivo === undefined) {
+    return 0;
   }
+
+  // Determinar si es una meta de reducción
+  const esReduccion = (meta.tipo === 'agua' || meta.tipo === 'electricidad' ||
+    (meta.tipo === 'transporte' &&
+      (meta.unidad === 'co2' || meta.unidad === 'costo')));
+
+  // Si es una meta de reducción (donde menos es mejor)
+  if (esReduccion) {
+    // Si ya alcanzamos o superamos el objetivo
+    if (meta.valorActual <= meta.valorObjetivo) {
+      return 100;
+    }
+
+    // Si tenemos valor inicial, usarlo para cálculo preciso
+    if (meta.valorInicial && meta.valorInicial > 0) {
+      // Cálculo basado en cuánto hemos reducido del total necesario
+      const reduccionTotal = meta.valorInicial - meta.valorObjetivo;
+      const reduccionActual = meta.valorInicial - meta.valorActual;
+
+      // Evitar división por cero
+      if (reduccionTotal <= 0) return 0;
+
+      // Calcular porcentaje y redondear
+      const porcentaje = (reduccionActual / reduccionTotal) * 100;
+      return Math.round(Math.max(0, Math.min(100, porcentaje)));
+    }
+
+    // Si no tenemos valor inicial, usar estimación
+    else {
+      // Estimamos que el valor inicial sería 30% mayor que el objetivo
+      const valorInicialEstimado = meta.valorObjetivo * 1.3;
+
+      // Usamos esta estimación para calcular
+      const reduccionTotal = valorInicialEstimado - meta.valorObjetivo;
+      const reduccionActual = valorInicialEstimado - meta.valorActual;
+
+      if (reduccionTotal <= 0) return 0;
+
+      const porcentaje = (reduccionActual / reduccionTotal) * 100;
+      return Math.round(Math.max(0, Math.min(100, porcentaje)));
+    }
+  }
+
+  // Para metas de incremento (donde más es mejor)
+  else {
+    // Evitar división por cero
+    if (meta.valorObjetivo <= 0) return 0;
+
+    // El progreso es el porcentaje del objetivo que hemos alcanzado
+    const porcentaje = (meta.valorActual / meta.valorObjetivo) * 100;
+    return Math.round(Math.max(0, Math.min(100, porcentaje)));
+  }
+}
+
+/**
+ * Determina si una meta es de reducción basándose en su tipo y valores
+ * Ya que no tenemos acceso directo a la propiedad 'metrica'
+ */
+function determinarSiEsReduccion(meta: Meta): boolean {
+  // Para agua y electricidad, son metas de reducción
+  if (meta.tipo === 'agua' || meta.tipo === 'electricidad') {
+    return true; // Asumimos que todas las metas de agua y electricidad son de reducción
+  }
+
+  // Para transporte, depende de la unidad y otros indicadores
+  else if (meta.tipo === 'transporte') {
+    // Si la unidad es km y el objetivo es menor que algún valor de referencia,
+    // probablemente es una meta de reducción de km en vehículos
+    if (meta.unidad === 'km' && meta.valorObjetivo < 100) {
+      return true;
+    }
+    // Si la unidad es CO2 o costo, probablemente es reducción
+    else if (meta.unidad === 'co2' || meta.unidad === 'costo') {
+      return true;
+    }
+    // En otros casos, probablemente es de incremento (ej: aumentar % de transporte sostenible)
+    return false;
+  }
+
+  // Para tipos combinados u otros, evaluamos por el valor objetivo vs actual
+  return meta.valorObjetivo < meta.valorActual;
 }
 
 /**

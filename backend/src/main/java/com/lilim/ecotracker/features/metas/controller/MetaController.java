@@ -1,13 +1,17 @@
 package com.lilim.ecotracker.features.metas.controller;
 
 import com.lilim.ecotracker.features.electricity.model.Electricity;
+import com.lilim.ecotracker.features.electricity.repository.ElectricityRepository;
 import com.lilim.ecotracker.features.metas.dto.MetaDTO;
 import com.lilim.ecotracker.features.metas.dto.MetaRecommendationDTO;
 import com.lilim.ecotracker.features.metas.dto.MetaUpdateProgresoDTO;
 import com.lilim.ecotracker.features.metas.model.Meta;
 import com.lilim.ecotracker.features.metas.repository.MetaRepository;
 import com.lilim.ecotracker.features.metas.service.MetaService;
+import com.lilim.ecotracker.features.transport.model.Transport;
+import com.lilim.ecotracker.features.transport.repository.TransportRepository;
 import com.lilim.ecotracker.features.water.model.Water;
+import com.lilim.ecotracker.features.water.repository.WaterRepository;
 import com.lilim.ecotracker.security.model.User;
 import com.lilim.ecotracker.security.service.UserService;
 import org.slf4j.Logger;
@@ -35,12 +39,21 @@ public class MetaController {
     private final MetaRepository metaRepository;
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(MetaController.class);
 
+    // Repositories for fetching records
+    private final WaterRepository waterRepository;
+    private final ElectricityRepository electricityRepository;
+    private final TransportRepository transportRepository;
+
+
 
     @Autowired
-    public MetaController(MetaService metaService, UserService userService, MetaRepository metaRepository) {
+    public MetaController(MetaService metaService, UserService userService, MetaRepository metaRepository, WaterRepository waterRepository, ElectricityRepository electricityRepository, TransportRepository transportRepository) {
         this.metaService = metaService;
         this.userService = userService;
         this.metaRepository = metaRepository;
+        this.waterRepository = waterRepository;
+        this.electricityRepository = electricityRepository;
+        this.transportRepository = transportRepository;
     }
 
     /**
@@ -160,22 +173,56 @@ public class MetaController {
         Meta meta = metaRepository.findByIdAndUserId(id, currentUser.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Meta no encontrada o acceso denegado"));
 
-        // Loguear para debug
-        logger.info("Actualizando meta {} para usuario {}", id, currentUser.getUsername());
+        // Agregar logs para diagnóstico detallado
+        logger.info("Iniciando actualización forzada de meta {} para usuario {}. Valores iniciales: valorActual={}, estado={}",
+                id, currentUser.getUsername(), meta.getValorActual(), meta.getEstado());
 
         try {
+            // Consultar todos los registros sin filtro para diagnóstico
+            if ("agua".equals(meta.getTipo())) {
+                List<Water> allRecords = waterRepository.findByUserId(currentUser.getId());
+                logger.info("Registros totales de agua para el usuario: {}", allRecords.size());
+                if (!allRecords.isEmpty()) {
+                    logger.info("Muestra de registros - Primero: fecha={}, valor={} | Último: fecha={}, valor={}",
+                            allRecords.get(0).getDate(), allRecords.get(0).getLiters(),
+                            allRecords.get(allRecords.size()-1).getDate(), allRecords.get(allRecords.size()-1).getLiters());
+                }
+            }
+            else if ("electricidad".equals(meta.getTipo())) {
+                List<Electricity> allRecords = electricityRepository.findByUserId(currentUser.getId());
+                logger.info("Registros totales de electricidad para el usuario: {}", allRecords.size());
+                if (!allRecords.isEmpty()) {
+                    logger.info("Muestra de registros - Primero: fecha={}, valor={} | Último: fecha={}, valor={}",
+                            allRecords.get(0).getDate(), allRecords.get(0).getKilowatts(),
+                            allRecords.get(allRecords.size()-1).getDate(), allRecords.get(allRecords.size()-1).getKilowatts());
+                }
+            }
+            else if("transporte".equals(meta.getTipo())) {
+                List<Transport> allRecords = transportRepository.findByUserId(currentUser.getId());
+                logger.info("Registros totales de transporte para el usuario: {}", allRecords.size());
+                if (!allRecords.isEmpty()) {
+                    logger.info("Muestra de registros - Primero: fecha={}, valor={} | Último: fecha={}, valor={}",
+                            allRecords.get(0).getDate(), allRecords.get(0).getKilometers(),
+                            allRecords.get(allRecords.size()-1).getDate(), allRecords.get(allRecords.size()-1).getKilometers());
+                }
+            }
+
+            // Ahora procedemos con la actualización normal
             metaService.updateAutomaticProgress(meta);
-            // Es importante guardar la meta actualizada
-            meta = metaRepository.save(meta);
-            logger.info("Meta actualizada: id={}, valorActual={}, estado={}",
-                    meta.getId(), meta.getValorActual(), meta.getEstado());
+
+            // Guardar explícitamente la meta actualizada
+            meta = metaRepository.saveAndFlush(meta); // Usar saveAndFlush para garantizar persistencia inmediata
+
+            // Verificar que los valores se actualizaron correctamente
+            logger.info("Meta actualizada correctamente. Nuevos valores: valorActual={}, estado={}",
+                    meta.getValorActual(), meta.getEstado());
         } catch (Exception e) {
             logger.error("Error al actualizar la meta {}: {}", id, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(null);
         }
 
-        // Convertir manualmente a DTO
+        // Convertir a DTO y retornar
         MetaDTO metaDTO = MetaDTO.builder()
                 .id(meta.getId())
                 .titulo(meta.getTitulo())

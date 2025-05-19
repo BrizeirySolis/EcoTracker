@@ -13,4 +13,6 @@ public interface TransportRepository extends JpaRepository<Transport, Long> {
     List<Transport> findByUserId(Long userId);
     List<Transport> findByUserIdAndDateBetween(Long userId, LocalDateTime dateStart, LocalDateTime dateEnd);
     List<Transport> findByUserIdAndDateBetweenAndTransportType(Long userId, LocalDateTime dateStart, LocalDateTime dateEnd, String transportType);
+
+    List<Transport> findByUserIdOrderByDateDesc(Long id);
 }

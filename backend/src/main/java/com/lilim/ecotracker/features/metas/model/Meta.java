@@ -44,6 +44,13 @@ public class Meta {
     private Double valorObjetivo;
 
     /**
+     * Valor inicial desde el que se parte (para metas de reducción)
+     * Por ejemplo, consumo actual antes de empezar la meta
+     */
+    @Column(nullable = true)
+    private Double valorInicial;
+
+    /**
      * Unidad de medida (m3, kwh, porcentaje, etc.)
      */
     @Column(nullable = false)

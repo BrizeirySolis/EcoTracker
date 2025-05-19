@@ -12,4 +12,6 @@ public interface WaterRepository extends JpaRepository<Water, Long> {
 
     List<Water> findByUserId(Long userId);
     List<Water> findByUserIdAndDateBetween(Long userId, LocalDateTime dateStart, LocalDateTime dateEnd);
+
+    List<Water> findByUserIdOrderByDateDesc(Long id);
 }

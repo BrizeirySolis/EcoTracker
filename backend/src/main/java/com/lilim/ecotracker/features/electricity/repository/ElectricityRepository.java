@@ -11,4 +11,6 @@ import java.util.List;
 public interface ElectricityRepository extends JpaRepository<Electricity, Long> {
     List<Electricity> findByUserId(Long electricityId);
     List<Electricity> findByUserIdAndDateBetween(Long userId, LocalDateTime dateStart, LocalDateTime dateEnd);
+
+    List<Electricity> findByUserIdOrderByDateDesc(Long id);
 }
