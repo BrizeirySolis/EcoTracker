@@ -77,4 +77,11 @@ public interface MetaService {
     void updateAllAutomaticMetas();
 
     void updateAutomaticProgress(Meta meta);
+
+    /**
+     * Actualiza todas las metas automáticas de un tipo específico
+     * @param tipo Tipo de meta a actualizar (agua, electricidad, transporte, etc.)
+     */
+    @Transactional
+    List<MetaDTO> updateAutomaticMetasForType(String tipo);
 }

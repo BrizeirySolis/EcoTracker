@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../navbar/navbar.component';
 import { MetaService } from '../../../services/meta.service';
 import { Meta, TIPOS_META, UNIDADES_META, calcularPorcentajeMeta } from '../../../models/meta.model';
-import { catchError, finalize, of } from 'rxjs';
+import {catchError, finalize, of, Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-meta-list',
@@ -28,10 +28,95 @@ export class MetaListComponent implements OnInit {
   metaToDelete: Meta | null = null;
   deleting = false;
 
+  // Añadir suscripción
+  private consumptionSubscription: Subscription | null = null;
+
   constructor(private metaService: MetaService) { }
 
   ngOnInit(): void {
-    this.loadMetas();
+    // Primero cargar las metas, luego actualizar su progreso
+    this.loadAndUpdateMetas();
+  }
+
+  /**
+   * Carga las metas y luego actualiza automáticamente su progreso
+   */
+  loadAndUpdateMetas(): void {
+    this.loading = true;
+    this.error = null;
+
+    // Primero cargar todas las metas
+    this.metaService.getAllMetas(false, this.selectedTipo)
+      .subscribe({
+        next: (metas) => {
+          // Guardar las metas cargadas
+          this.metas = metas;
+
+          // Ahora actualizar el progreso de todas las metas
+          this.updateAllMetasProgress();
+        },
+        error: (error) => {
+          this.error = error.message || 'Error al cargar las metas';
+          this.loading = false;
+        }
+      });
+  }
+
+  /**
+   * Actualiza el progreso de todas las metas cargadas
+   */
+  updateAllMetasProgress(): void {
+    // Filtrar solo las metas automáticas en progreso
+    const metasToUpdate = this.metas.filter(meta =>
+      meta.tipoEvaluacion === 'automatica' && meta.estado === 'en_progreso'
+    );
+
+    if (metasToUpdate.length === 0) {
+      this.loading = false;
+      return;
+    }
+
+    this.metaService.refreshMultipleMetas(metasToUpdate)
+      .pipe(finalize(() => this.loading = false))
+      .subscribe({
+        next: (updatedMetas) => {
+          console.log('Metas actualizadas automáticamente:', updatedMetas);
+
+          // Actualizar las metas en el array principal
+          updatedMetas.forEach(updatedMeta => {
+            const index = this.metas.findIndex(m => m.id === updatedMeta.id);
+            if (index !== -1) {
+              this.metas[index] = updatedMeta;
+            }
+          });
+        },
+        error: (error) => {
+          console.error('Error al actualizar metas:', error);
+          // El loading se desactiva en el finalize
+        }
+      });
+  }
+
+  /**
+   * Cargar metas con actualización automática
+   */
+  loadMetasWithRefresh(): void {
+    this.loading = true;
+    this.error = null;
+
+    // Primero actualizar todas las metas automáticas
+    this.metaService.refreshAllMetas(this.selectedTipo)
+      .subscribe({
+        next: () => {
+          // Después de actualizar, cargar las metas
+          this.loadMetas();
+        },
+        error: (error) => {
+          console.error('Error al actualizar las metas:', error);
+          // Si hay un error, intentar cargar las metas de todos modos
+          this.loadMetas();
+        }
+      });
   }
 
   /**
@@ -42,15 +127,16 @@ export class MetaListComponent implements OnInit {
     this.error = null;
 
     this.metaService.getAllMetas(true, this.selectedTipo)
-      .pipe(
-        catchError(error => {
+      .subscribe({
+        next: (metas) => {
+          this.metas = metas;
+        },
+        error: (error) => {
           this.error = error.message || 'Error al cargar las metas';
-          return of([]);
-        }),
-        finalize(() => this.loading = false)
-      )
-      .subscribe(metas => {
-        this.metas = metas;
+        },
+        complete: () => {
+          this.loading = false;
+        }
       });
   }
 
@@ -58,7 +144,14 @@ export class MetaListComponent implements OnInit {
    * Manejar cambio en el filtro de tipo
    */
   onTipoFilterChange(): void {
-    this.loadMetas();
+    // Usar la nueva función para actualizar y cargar
+    this.loadMetasWithRefresh();
+  }
+
+  ngOnDestroy(): void {
+    if (this.consumptionSubscription) {
+      this.consumptionSubscription.unsubscribe();
+    }
   }
 
   /**

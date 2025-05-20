@@ -2,7 +2,7 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError } from 'rxjs';
+import {Observable, BehaviorSubject, throwError, Subject, forkJoin, of} from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { Meta, MetaCreateRequest } from '../models/meta.model';
 import { environment } from '../../environments/environment';
@@ -25,7 +25,37 @@ export class MetaService {
   // Track if data has been loaded to avoid redundant requests
   private dataLoaded = false;
 
-  constructor(private http: HttpClient) { }
+  private consumptionUpdatedSource = new Subject<string>();
+  public consumptionUpdated$ = this.consumptionUpdatedSource.asObservable();
+
+  constructor(private http: HttpClient) {}
+
+  // Método para notificar actualizaciones de consumo
+  notifyConsumptionUpdated(type: string): void {
+    this.consumptionUpdatedSource.next(type);
+  }
+
+  // Método para actualizar múltiples metas (procesa cada una individualmente)
+  refreshMultipleMetas(metas: Meta[]): Observable<Meta[]> {
+    // Si no hay metas para actualizar, devolver un observable vacío
+    if (!metas || metas.length === 0) {
+      return of([]);
+    }
+
+    // Crear un array de observables para cada actualización de meta
+    const refreshObservables = metas.map(meta =>
+      this.refreshMetaProgress(meta.id!).pipe(
+        // Si una meta falla, devolver la meta original sin cambios
+        catchError(error => {
+          console.error(`Error al actualizar meta ${meta.id}:`, error);
+          return of(meta);
+        })
+      )
+    );
+
+    // Combinar todos los observables en uno solo que emita cuando todos completen
+    return forkJoin(refreshObservables);
+  }
 
   /**
    * Obtener todas las metas, opcionalmente filtradas por tipo
@@ -255,6 +285,11 @@ export class MetaService {
     );
   }
 
+  /**
+   * Actualiza el progreso de una meta específica
+   * @param id ID de la meta
+   * @returns Observable de la meta actualizada
+   */
   refreshMetaProgress(id: number): Observable<Meta> {
     return this.http.get<Meta>(`${this.API_URL}/${id}/refresh`).pipe(
       map(meta => this.processMetaDateFields(meta)),
@@ -267,5 +302,20 @@ export class MetaService {
         return throwError(() => new Error('Error al actualizar el progreso. Por favor, inténtalo de nuevo.'));
       })
     );
+  }
+
+  /**
+   * Actualiza todas las metas automáticas (o de un tipo específico)
+   * @param tipo Tipo de meta a actualizar (opcional)
+   * @returns Observable del resultado
+   */
+  refreshAllMetas(tipo?: string): Observable<any> {
+    let url = `${this.API_URL}/refresh-all`;
+
+    if (tipo && tipo !== '') {
+      url += `?tipo=${tipo}`;
+    }
+
+    return this.http.get<any>(url);
   }
 }

@@ -12,7 +12,7 @@ import {
   calcularPorcentajeMeta,
   obtenerEstadoMeta
 } from '../../../models/meta.model';
-import { finalize } from 'rxjs';
+import {finalize, Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-meta-detail',
@@ -39,6 +39,9 @@ export class MetaDetailComponent implements OnInit {
   showDeleteModal = false;
   deleting = false;
 
+  // Añadir propiedad para la suscripción
+  private consumptionSubscription: Subscription | null = null;
+
   constructor(
     private metaService: MetaService,
     private route: ActivatedRoute,
@@ -46,7 +49,52 @@ export class MetaDetailComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.loadMeta();
+    // Extraer el ID de la meta
+    const id = +this.route.snapshot.paramMap.get('id')!;
+
+    if (isNaN(id) || id <= 0) {
+      this.error = 'ID de meta inválido';
+      this.loading = false;
+      return;
+    }
+
+    // Primero actualizar la meta, luego cargarla
+    this.refreshMetaProgress(id, true);
+  }
+
+  /**
+   * Actualiza el progreso de la meta automáticamente y luego la carga
+   * @param id ID de la meta
+   * @param autoLoad Indica si cargar automáticamente la meta después de actualizar
+   */
+  refreshMetaProgress(id: number, autoLoad: boolean = false): void {
+    this.loading = true;
+
+    this.metaService.refreshMetaProgress(id)
+      .subscribe({
+        next: (meta) => {
+          if (autoLoad) {
+            // Actualizar la meta en el componente
+            this.meta = meta;
+            this.newValorActual = meta.valorActual;
+            this.isManualEvaluation = this.determinarTipoEvaluacion(meta.tipo) === 'manual';
+            this.loading = false;
+          } else {
+            // Si no es autoLoad, es porque se presionó el botón manualmente
+            this.loadMeta();
+          }
+        },
+        error: (error) => {
+          console.error('Error al actualizar meta:', error);
+          // Si hay un error en la actualización, intentar cargar la meta de todos modos
+          if (autoLoad) {
+            this.loadMeta();
+          } else {
+            this.error = error.message || 'Error al actualizar la meta';
+            this.loading = false;
+          }
+        }
+      });
   }
 
   /**
@@ -58,16 +106,7 @@ export class MetaDetailComponent implements OnInit {
 
     const id = +this.route.snapshot.paramMap.get('id')!;
 
-    if (isNaN(id) || id <= 0) {
-      this.error = 'ID de meta inválido';
-      this.loading = false;
-      return;
-    }
-
     this.metaService.getMetaById(id)
-      .pipe(
-        finalize(() => this.loading = false)
-      )
       .subscribe({
         next: (meta) => {
           this.meta = meta;
@@ -76,6 +115,9 @@ export class MetaDetailComponent implements OnInit {
         },
         error: (error) => {
           this.error = error.message || 'Error al cargar la meta';
+        },
+        complete: () => {
+          this.loading = false;
         }
       });
   }

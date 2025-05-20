@@ -170,48 +170,77 @@ public class MetaController {
     public ResponseEntity<MetaDTO> refreshMetaProgress(@PathVariable Long id) {
         User currentUser = userService.getCurrentUser();
 
+
         Meta meta = metaRepository.findByIdAndUserId(id, currentUser.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Meta no encontrada o acceso denegado"));
 
-        // Agregar logs para diagnóstico detallado
         logger.info("Iniciando actualización forzada de meta {} para usuario {}. Valores iniciales: valorActual={}, estado={}",
                 id, currentUser.getUsername(), meta.getValorActual(), meta.getEstado());
 
         try {
             // Consultar todos los registros sin filtro para diagnóstico
-            if ("agua".equals(meta.getTipo())) {
-                List<Water> allRecords = waterRepository.findByUserId(currentUser.getId());
-                logger.info("Registros totales de agua para el usuario: {}", allRecords.size());
-                if (!allRecords.isEmpty()) {
-                    logger.info("Muestra de registros - Primero: fecha={}, valor={} | Último: fecha={}, valor={}",
-                            allRecords.get(0).getDate(), allRecords.get(0).getLiters(),
-                            allRecords.get(allRecords.size()-1).getDate(), allRecords.get(allRecords.size()-1).getLiters());
-                }
-            }
-            else if ("electricidad".equals(meta.getTipo())) {
+            if ("electricidad".equals(meta.getTipo())) {
                 List<Electricity> allRecords = electricityRepository.findByUserId(currentUser.getId());
                 logger.info("Registros totales de electricidad para el usuario: {}", allRecords.size());
+
                 if (!allRecords.isEmpty()) {
+                    // Ordenar los registros por fecha (descendente)
+                    allRecords.sort((a, b) -> b.getDate().compareTo(a.getDate()));
+
+                    Electricity first = allRecords.get(allRecords.size()-1);
+                    Electricity last = allRecords.get(0);
+
                     logger.info("Muestra de registros - Primero: fecha={}, valor={} | Último: fecha={}, valor={}",
-                            allRecords.get(0).getDate(), allRecords.get(0).getKilowatts(),
-                            allRecords.get(allRecords.size()-1).getDate(), allRecords.get(allRecords.size()-1).getKilowatts());
+                            first.getDate(), first.getKilowatts(), last.getDate(), last.getKilowatts());
+
+                    // ACTUALIZACIÓN DIRECTA: Usar el último valor como valor actual
+                    meta.setValorActual(last.getKilowatts());
+                    logger.info("Actualizando directamente valorActual a {} kWh (último registro)", last.getKilowatts());
                 }
             }
-            else if("transporte".equals(meta.getTipo())) {
+            else if ("agua".equals(meta.getTipo())) {
+                List<Water> allRecords = waterRepository.findByUserId(currentUser.getId());
+                logger.info("Registros totales de agua para el usuario: {}", allRecords.size());
+
+                if (!allRecords.isEmpty()) {
+                    // Ordenar los registros por fecha (descendente)
+                    allRecords.sort((a, b) -> b.getDate().compareTo(a.getDate()));
+
+                    Water first = allRecords.get(allRecords.size()-1);
+                    Water last = allRecords.get(0);
+
+                    logger.info("Muestra de registros - Primero: fecha={}, valor={} | Último: fecha={}, valor={}",
+                            first.getDate(), first.getLiters(), last.getDate(), last.getLiters());
+
+                    // ACTUALIZACIÓN DIRECTA: Usar el último valor como valor actual
+                    meta.setValorActual(last.getLiters());
+                    logger.info("Actualizando directamente valorActual a {} litros (último registro)", last.getLiters());
+                }
+            } else if ("transporte".equals(meta.getTipo())) {
                 List<Transport> allRecords = transportRepository.findByUserId(currentUser.getId());
                 logger.info("Registros totales de transporte para el usuario: {}", allRecords.size());
+
                 if (!allRecords.isEmpty()) {
+                    // Ordenar los registros por fecha (descendente)
+                    allRecords.sort((a, b) -> b.getDate().compareTo(a.getDate()));
+
+                    Transport first = allRecords.get(allRecords.size()-1);
+                    Transport last = allRecords.get(0);
+
                     logger.info("Muestra de registros - Primero: fecha={}, valor={} | Último: fecha={}, valor={}",
-                            allRecords.get(0).getDate(), allRecords.get(0).getKilometers(),
-                            allRecords.get(allRecords.size()-1).getDate(), allRecords.get(allRecords.size()-1).getKilometers());
+                            first.getDate(), first.getKilometers(), last.getDate(), last.getKilometers());
+
+                    // ACTUALIZACIÓN DIRECTA: Usar el último valor como valor actual
+                    meta.setValorActual(last.getKilometers());
+                    logger.info("Actualizando directamente valorActual a {} km (último registro)", last.getKilometers());
                 }
             }
 
-            // Ahora procedemos con la actualización normal
+            // También llamar al método de actualización normal
             metaService.updateAutomaticProgress(meta);
 
             // Guardar explícitamente la meta actualizada
-            meta = metaRepository.saveAndFlush(meta); // Usar saveAndFlush para garantizar persistencia inmediata
+            meta = metaRepository.saveAndFlush(meta);
 
             // Verificar que los valores se actualizaron correctamente
             logger.info("Meta actualizada correctamente. Nuevos valores: valorActual={}, estado={}",
@@ -242,5 +271,52 @@ public class MetaController {
                 .build();
 
         return ResponseEntity.ok(metaDTO);
+    }
+
+    @GetMapping("/refresh-by-type/{tipo}")
+    public ResponseEntity<List<MetaDTO>> refreshMetasByType(@PathVariable String tipo) {
+        User currentUser = userService.getCurrentUser();
+
+        try {
+            List<MetaDTO> updatedMetas = metaService.updateAutomaticMetasForType(tipo);
+            return ResponseEntity.ok(updatedMetas);
+        } catch (Exception e) {
+            logger.error("Error actualizando metas de tipo {}: {}", tipo, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    // En backend/src/main/java/com/lilim/ecotracker/features/metas/controller/MetaController.java
+
+    /**
+     * Actualizar todas las metas automáticas del usuario actual
+     * @param tipo Tipo de meta a actualizar (opcional)
+     * @return Lista de metas actualizadas
+     */
+    @GetMapping("/refresh-all")
+    public ResponseEntity<List<MetaDTO>> refreshAllMetas(
+            @RequestParam(required = false) String tipo) {
+
+        User currentUser = userService.getCurrentUser();
+
+        try {
+            List<MetaDTO> updatedMetas;
+
+            if (tipo != null && !tipo.isEmpty()) {
+                // Actualizar metas de un tipo específico
+                updatedMetas = metaService.updateAutomaticMetasForType(tipo);
+            } else {
+                // Actualizar todas las metas automáticas
+                metaService.updateAllAutomaticMetas();
+
+                // Obtener las metas actualizadas
+                updatedMetas = metaService.getAllMetas();
+            }
+
+            return ResponseEntity.ok(updatedMetas);
+        } catch (Exception e) {
+            logger.error("Error actualizando metas: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 }

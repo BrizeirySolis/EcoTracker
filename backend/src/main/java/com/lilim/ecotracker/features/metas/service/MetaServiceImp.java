@@ -136,36 +136,37 @@ public class MetaServiceImp implements MetaService {
         try {
             switch (tipo) {
                 case "agua":
-                    // Obtener la suma total de consumo de agua sin filtrar por fechas
-                    List<Water> consumosAgua = waterRepository.findByUserId(currentUser.getId());
-                    if (!consumosAgua.isEmpty()) {
-                        valorActual = consumosAgua.stream()
-                                .mapToDouble(Water::getLiters)
-                                .sum();
-                        logger.info("Valor actual para agua calculado: {} m³", valorActual);
+                    // Obtener solo el último registro de agua
+                    List<Water> ultimosConsumoAgua = waterRepository.findByUserIdOrderByDateDesc(currentUser.getId());
+                    if (!ultimosConsumoAgua.isEmpty()) {
+                        valorActual = ultimosConsumoAgua.get(0).getLiters();
+                        logger.info("Valor actual para agua (último registro): {} m³", valorActual);
                     }
                     break;
 
                 case "electricidad":
-                    // Obtener la suma total de consumo eléctrico sin filtrar por fechas
-                    List<Electricity> consumosElectricidad = electricityRepository.findByUserId(currentUser.getId());
-                    if (!consumosElectricidad.isEmpty()) {
-                        valorActual = consumosElectricidad.stream()
-                                .mapToDouble(Electricity::getKilowatts)
-                                .sum();
-                        logger.info("Valor actual para electricidad calculado: {} kWh", valorActual);
+                    // Obtener solo el último registro de electricidad
+                    List<Electricity> ultimosConsumoElectricidad = electricityRepository.findByUserIdOrderByDateDesc(currentUser.getId());
+                    if (!ultimosConsumoElectricidad.isEmpty()) {
+                        valorActual = ultimosConsumoElectricidad.get(0).getKilowatts();
+                        logger.info("Valor actual para electricidad (último registro): {} kWh", valorActual);
                     }
                     break;
 
                 case "transporte":
-                    // Para transporte, depende de la métrica específica
+                    // Para transporte, solo considerar el último periodo
                     if ("reduccion_combustion".equals(metrica)) {
-                        List<Transport> transportes = transportRepository.findByUserId(currentUser.getId());
-                        valorActual = transportes.stream()
+                        // Podemos obtener los registros recientes, por ejemplo del último mes
+                        LocalDateTime unMesAtras = LocalDateTime.now().minus(1, ChronoUnit.MONTHS);
+                        List<Transport> transportesRecientes = transportRepository.findByUserIdAndDateBetween(
+                                currentUser.getId(), unMesAtras, LocalDateTime.now());
+
+                        // Solo considerar vehículos de tipo "car"
+                        valorActual = transportesRecientes.stream()
                                 .filter(t -> "car".equals(t.getTransportType()))
                                 .mapToDouble(Transport::getKilometers)
                                 .sum();
-                        logger.info("Valor actual para transporte (combustión) calculado: {} km", valorActual);
+                        logger.info("Valor actual para transporte (combustión reciente): {} km", valorActual);
                     }
                     break;
             }
@@ -374,39 +375,73 @@ public class MetaServiceImp implements MetaService {
      * Actualizar el estado de una meta basado en el progreso actual
      */
     private void updateMetaStatus(Meta meta) {
-        logger.info("Evaluando estado meta ID {}: valorActual={}, valorObjetivo={}",
-                meta.getId(), meta.getValorActual(), meta.getValorObjetivo());
+        logger.info("Evaluando estado meta ID {}: valorActual={}, valorInicial={}, valorObjetivo={}",
+                meta.getId(), meta.getValorActual(), meta.getValorInicial(), meta.getValorObjetivo());
 
-        // Determinar si es meta de reducción
+        // Determinar si es meta de reducción basado en tipo y métrica
         boolean esReduccion = isReductionMetric(meta.getTipo(), meta.getMetrica());
-        boolean metaCompletada = false;
 
-        // SOLUCIÓN: Si el valor actual es 0 y la métrica es de reducción,
-        // no considerar como completada salvo que sea realmente intencional
-        if (meta.getValorActual() == 0 && esReduccion) {
-            // Para evitar falsa "completada" al iniciar, verificamos si hubo actualización real
-            if (meta.getUpdatedAt() == null ||
-                    meta.getUpdatedAt().isEqual(meta.getCreatedAt())) {
-                // Meta nueva sin actualizaciones reales, mantener en progreso
-                logger.info("Meta de reducción nueva con valor 0, marcando en_progreso");
-                meta.setEstado("en_progreso");
-                return;
+        // Para transporte, verificar métricas específicas
+        if ("transporte".equals(meta.getTipo())) {
+            // Métricas de reducción incluyen "reduccion_combustion", "emisiones", "costo"
+            // Métricas de incremento incluyen "porcentaje_sostenible", "km_bicicleta", "uso_bicicleta"
+            if ("km_bicicleta".equals(meta.getMetrica()) ||
+                    "uso_bicicleta".equals(meta.getMetrica()) ||
+                    "porcentaje_sostenible".equals(meta.getMetrica())) {
+                esReduccion = false; // Estas son metas de incremento
             }
         }
 
-        // Evaluación normal para otros casos
+        // Si el valor inicial es "No disponible", establecerlo adecuadamente
+        if (meta.getValorInicial() == null || "No disponible".equals(meta.getValorInicial())) {
+            if (esReduccion) {
+                // Para reducción, establecer mayor que el objetivo
+                meta.setValorInicial(meta.getValorObjetivo() * 1.5);
+            } else {
+                // Para incremento, establecer en 0
+                meta.setValorInicial(0.0);
+            }
+            logger.info("Meta ID {}: Valor inicial corregido de 'No disponible' a {}",
+                    meta.getId(), meta.getValorInicial());
+        }
+
+        // Calcular progreso para logging
+        double progreso = 0;
+        if (esReduccion) {
+            if (meta.getValorInicial() != null && meta.getValorActual() != null) {
+                double reduccionTotal = meta.getValorInicial() - meta.getValorObjetivo();
+                if (reduccionTotal > 0) {
+                    double reduccionActual = meta.getValorInicial() - meta.getValorActual();
+                    progreso = (reduccionActual / reduccionTotal) * 100;
+                    logger.info("Meta ID {}: Progreso calculado para reducción: {}%", meta.getId(), progreso);
+                }
+            }
+        } else {
+            if (meta.getValorActual() != null && meta.getValorObjetivo() > 0) {
+                progreso = (meta.getValorActual() / meta.getValorObjetivo()) * 100;
+                logger.info("Meta ID {}: Progreso calculado para incremento: {}%", meta.getId(), progreso);
+            }
+        }
+
+        // Determinar si la meta está completada
+        boolean metaCompletada = false;
         if (esReduccion) {
             metaCompletada = meta.getValorActual() <= meta.getValorObjetivo();
         } else {
             metaCompletada = meta.getValorActual() >= meta.getValorObjetivo();
         }
 
+        // Actualizar estado
         if (metaCompletada) {
             meta.setEstado("completada");
+            logger.info("Meta ID {}: Meta completada", meta.getId());
         } else if (meta.getFechaFin().isBefore(LocalDateTime.now())) {
             meta.setEstado("fallida");
+            logger.info("Meta ID {}: Meta fallida (fecha vencida)", meta.getId());
         } else {
             meta.setEstado("en_progreso");
+            logger.info("Meta ID {}: Meta en progreso ({}% completado)", meta.getId(),
+                    Math.min(100, Math.max(0, Math.round(progreso))));
         }
     }
 
@@ -447,12 +482,25 @@ public class MetaServiceImp implements MetaService {
 
         // En transporte, depende de la métrica
         if ("transporte".equals(tipo)) {
-            return "reduccion_combustion".equals(metrica) ||
+            // Métricas específicas de reducción
+            boolean esReduccion = "reduccion_combustion".equals(metrica) ||
                     "emisiones".equals(metrica) ||
                     "costo".equals(metrica);
+
+            // Métricas específicas de incremento (como uso de bicicleta)
+            boolean esIncremento = "porcentaje_sostenible".equals(metrica) ||
+                    "km_bicicleta".equals(metrica) ||
+                    "uso_bicicleta".equals(metrica);
+
+            if (esReduccion) return true;
+            if (esIncremento) return false;
+
+            // Si no es una métrica específica, usar heurística
+            return true; // Por defecto asumimos reducción para transporte
         }
 
-        return false;
+        // Para tipos combinados u otros, evaluar por el valor objetivo vs actual
+        return false; // Por defecto para otros tipos
     }
 
     /**
@@ -485,27 +533,30 @@ public class MetaServiceImp implements MetaService {
     private void updateWaterMetaProgress(Meta meta) {
         User user = meta.getUser();
 
+
         if ("consumo_total".equals(meta.getMetrica())) {
-            // No filtrar por fechas para incluir datos simulados
-            List<Water> consumos = waterRepository.findByUserId(user.getId());
+            // Obtener el último registro por fecha
+            List<Water> registros = waterRepository.findByUserIdOrderByDateDesc(user.getId());
 
-            logger.info("Meta ID {}: Encontrados {} registros de agua",
-                    meta.getId(), consumos.size());
+            if (!registros.isEmpty()) {
+                // Usar el valor del último registro
+                Water ultimoRegistro = registros.get(0);
+                logger.info("Meta ID {}: Último registro de agua - fecha={}, valor={} m³",
+                        meta.getId(), ultimoRegistro.getDate(), ultimoRegistro.getLiters());
 
-            double consumoTotal = consumos.stream()
-                    .mapToDouble(Water::getLiters)
-                    .sum();
+                // Actualizar el valor actual
+                meta.setValorActual(ultimoRegistro.getLiters());
+                logger.info("Meta ID {}: Valor actual actualizado a {} m³",
+                        meta.getId(), meta.getValorActual());
 
-            logger.info("Meta ID {}: Consumo total de agua: {} m³", meta.getId(), consumoTotal);
-
-            // Actualizar el valor actual
-            meta.setValorActual(consumoTotal);
-
-            // NUEVO: Asegurar que tenemos un valor inicial
-            if (meta.getValorInicial() == null || meta.getValorInicial() == 0) {
-                meta.setValorInicial(Math.max(consumoTotal, meta.getValorObjetivo() * 1.2));
-                logger.info("Meta ID {}: Estableciendo valor inicial: {} m³",
-                        meta.getId(), meta.getValorInicial());
+                // Si no hay valor inicial, establecerlo
+                if (meta.getValorInicial() == null || meta.getValorInicial() <= 0) {
+                    meta.setValorInicial(Math.max(ultimoRegistro.getLiters() * 1.05, meta.getValorObjetivo() * 1.2));
+                    logger.info("Meta ID {}: Valor inicial establecido a {} m³",
+                            meta.getId(), meta.getValorInicial());
+                }
+            } else {
+                logger.warn("Meta ID {}: No se encontraron registros de agua", meta.getId());
             }
         }
         else if ("benchmark".equals(meta.getMetrica())) {
@@ -534,28 +585,28 @@ public class MetaServiceImp implements MetaService {
         User user = meta.getUser();
 
         if ("consumo_total".equals(meta.getMetrica())) {
-            // No filtrar por fechas para incluir datos simulados
-            List<Electricity> consumos = electricityRepository.findByUserId(user.getId());
+            // Obtener todos los registros ordenados por fecha (el más reciente primero)
+            List<Electricity> registros = electricityRepository.findByUserIdOrderByDateDesc(user.getId());
 
-            logger.info("Meta ID {}: Encontrados {} registros de electricidad",
-                    meta.getId(), consumos.size());
+            // Imprimir información detallada para diagnóstico
+            if (!registros.isEmpty()) {
+                Electricity ultimoRegistro = registros.get(0);
+                logger.info("Meta ID {}: Último registro de electricidad encontrado - fecha={}, valor={}",
+                        meta.getId(), ultimoRegistro.getDate(), ultimoRegistro.getKilowatts());
 
-            double consumoTotal = consumos.stream()
-                    .mapToDouble(Electricity::getKilowatts)
-                    .sum();
+                // Actualizar el valor actual con el último registro
+                meta.setValorActual(ultimoRegistro.getKilowatts());
+                logger.info("Meta ID {}: Valor actual actualizado a {} kWh",
+                        meta.getId(), meta.getValorActual());
 
-            logger.info("Meta ID {}: Consumo total de electricidad: {} kWh", meta.getId(), consumoTotal);
-
-            // Actualizar el valor actual
-            meta.setValorActual(consumoTotal);
-
-            // NUEVO: Asegurar que tenemos un valor inicial
-            if (meta.getValorInicial() == null || meta.getValorInicial() <= 0) {
-                double valorInicialNuevo = Math.max(consumoTotal, meta.getValorObjetivo() * 1.2);
-                meta.setValorInicial(valorInicialNuevo);
-                meta.setValorInicial(Math.max(consumoTotal, meta.getValorObjetivo() * 1.2));
-                logger.info("Meta ID {}: Estableciendo valor inicial: {} kWh",
-                        meta.getId(), meta.getValorInicial());
+                // Mantener el valor inicial para permitir el cálculo del progreso
+                if (meta.getValorInicial() == null || meta.getValorInicial() <= 0) {
+                    meta.setValorInicial(ultimoRegistro.getKilowatts() * 1.1); // 10% más alto para meta de reducción
+                    logger.info("Meta ID {}: Valor inicial establecido a {} kWh",
+                            meta.getId(), meta.getValorInicial());
+                }
+            } else {
+                logger.warn("Meta ID {}: No se encontraron registros de electricidad", meta.getId());
             }
         }
         else if ("benchmark".equals(meta.getMetrica())) {
@@ -600,109 +651,96 @@ public class MetaServiceImp implements MetaService {
         User user = meta.getUser();
 
         if ("reduccion_combustion".equals(meta.getMetrica())) {
-            // No filtrar por fechas para incluir datos simulados
-            List<Transport> transportes = transportRepository.findByUserIdAndTransportType(
-                    user.getId(), "car");
+            // Para metas de reducción de combustión
 
-            logger.info("Meta ID {}: Encontrados {} registros de transporte (carro)",
-                    meta.getId(), transportes.size());
+            // Obtener los datos de transporte del último mes
+            LocalDateTime unMesAtras = LocalDateTime.now().minus(1, ChronoUnit.MONTHS);
+            List<Transport> transportesUltimoMes = transportRepository.findByUserIdAndDateBetween(
+                    user.getId(), unMesAtras, LocalDateTime.now());
 
-            double totalKm = transportes.stream()
+            // Filtrar solo vehículos de combustión (cars)
+            double totalKmUltimoMes = transportesUltimoMes.stream()
+                    .filter(t -> "car".equals(t.getTransportType()))
                     .mapToDouble(Transport::getKilometers)
                     .sum();
 
-            logger.info("Meta ID {}: Kilómetros totales en carro: {} km", meta.getId(), totalKm);
+            logger.info("Meta ID {}: Kilómetros en vehículos de combustión del último mes: {} km",
+                    meta.getId(), totalKmUltimoMes);
 
-            // Actualizar el valor actual
-            meta.setValorActual(totalKm);
+            // Actualizar el valor actual con los kilómetros del último mes
+            meta.setValorActual(totalKmUltimoMes);
 
-            // NUEVO: Asegurar que tenemos un valor inicial
-            if (meta.getValorInicial() == null || meta.getValorInicial() == 0) {
-                meta.setValorInicial(Math.max(totalKm, meta.getValorObjetivo() * 1.2));
-                logger.info("Meta ID {}: Estableciendo valor inicial para km en carro: {}",
-                        meta.getId(), meta.getValorInicial());
+            // Establecer un valor inicial adecuado si no existe o es muy bajo
+            if (meta.getValorInicial() == null || meta.getValorInicial() < 1.0) {
+                // Para una meta de reducción, el valor inicial debe ser mayor que el valor objetivo
+                double valorInicial = Math.max(totalKmUltimoMes, meta.getValorObjetivo() * 1.2);
+                meta.setValorInicial(valorInicial);
+                logger.info("Meta ID {}: Estableciendo valor inicial adecuado: {} km",
+                        meta.getId(), valorInicial);
             }
         }
-        else if ("porcentaje_sostenible".equals(meta.getMetrica())) {
-            // Código existente para porcentaje de transporte sostenible
-            List<Transport> todos = transportRepository.findByUserId(user.getId());
+        else if ("km_bicicleta".equals(meta.getMetrica()) || "uso_bicicleta".equals(meta.getMetrica())) {
+            // Para metas específicas de uso de bicicleta
 
-            if (!todos.isEmpty()) {
-                double totalKm = todos.stream()
-                        .mapToDouble(Transport::getKilometers)
-                        .sum();
+            // Obtener los datos de bicicleta del último mes
+            LocalDateTime unMesAtras = LocalDateTime.now().minus(1, ChronoUnit.MONTHS);
+            List<Transport> transportesBiciUltimoMes = transportRepository.findByUserIdAndTransportTypeAndDateBetween(
+                    user.getId(), "bicycle", unMesAtras, LocalDateTime.now());
 
-                double sostenibleKm = todos.stream()
-                        .filter(t -> "bicycle".equals(t.getTransportType()) || "walk".equals(t.getTransportType()))
-                        .mapToDouble(Transport::getKilometers)
-                        .sum();
-
-                double porcentaje = totalKm > 0 ? (sostenibleKm / totalKm) * 100 : 0;
-                meta.setValorActual(porcentaje);
-
-                // NUEVO: Si no hay valor inicial, usar el valor actual
-                // Nota: Para métricas de incremento, empezamos desde el valor actual
-                if (meta.getValorInicial() == null || meta.getValorInicial() == 0) {
-                    meta.setValorInicial(porcentaje);
-                    logger.info("Meta ID {}: Estableciendo valor inicial para % sostenible: {}",
-                            meta.getId(), meta.getValorInicial());
-                }
-            }
-        }
-        else if ("emisiones".equals(meta.getMetrica())) {
-            // Calcular emisiones de CO2 para todos los transportes
-            List<Transport> todos = transportRepository.findByUserId(user.getId());
-
-            double emisionesTotal = 0.0;
-
-            for (Transport t : todos) {
-                // Factores de emisión según tipo de transporte
-                double factorEmision = 0.0;
-                switch (t.getTransportType()) {
-                    case "car":
-                        factorEmision = 0.192; // kg CO2 por km
-                        break;
-                    case "bus":
-                        factorEmision = 0.105; // kg CO2 por km
-                        break;
-                    case "bicycle":
-                    case "walk":
-                        factorEmision = 0.0; // Sin emisiones
-                        break;
-                    default:
-                        factorEmision = 0.150; // Valor por defecto
-                }
-
-                emisionesTotal += t.getKilometers() * factorEmision;
-            }
-
-            meta.setValorActual(emisionesTotal);
-
-            // NUEVO: Si no hay valor inicial, usar el valor actual
-            if (meta.getValorInicial() == null || meta.getValorInicial() == 0) {
-                meta.setValorInicial(Math.max(emisionesTotal, meta.getValorObjetivo() * 1.2));
-                logger.info("Meta ID {}: Estableciendo valor inicial para emisiones transporte: {}",
-                        meta.getId(), meta.getValorInicial());
-            }
-        }
-        else if ("costo".equals(meta.getMetrica())) {
-            // Código para costo total de transporte
-            List<Transport> todos = transportRepository.findByUserId(user.getId());
-
-            double costoTotal = todos.stream()
-                    .mapToDouble(Transport::getCost)
+            // Calcular kilometraje de bicicleta del último mes
+            double totalKmBiciUltimoMes = transportesBiciUltimoMes.stream()
+                    .mapToDouble(Transport::getKilometers)
                     .sum();
 
-            meta.setValorActual(costoTotal);
+            logger.info("Meta ID {}: Kilómetros en bicicleta del último mes: {} km",
+                    meta.getId(), totalKmBiciUltimoMes);
 
-            // NUEVO: Si no hay valor inicial, usar el valor actual
-            if (meta.getValorInicial() == null || meta.getValorInicial() == 0) {
-                meta.setValorInicial(Math.max(costoTotal, meta.getValorObjetivo() * 1.2));
-                logger.info("Meta ID {}: Estableciendo valor inicial para costo transporte: {}",
-                        meta.getId(), meta.getValorInicial());
+            // Actualizar el valor actual
+            meta.setValorActual(totalKmBiciUltimoMes);
+
+            // Para metas de incremento, el valor inicial es 0
+            if (meta.getValorInicial() == null || meta.getValorInicial() < 0) {
+                meta.setValorInicial(0.0);
+                logger.info("Meta ID {}: Estableciendo valor inicial para meta de incremento: 0 km",
+                        meta.getId());
             }
         }
-        // Otras métricas se manejarían de manera similar
+        else {
+            // Para otras métricas o caso por defecto
+
+            // Obtener el último registro de transporte (todos los tipos)
+            LocalDateTime unMesAtras = LocalDateTime.now().minus(1, ChronoUnit.MONTHS);
+            List<Transport> transportesUltimoMes = transportRepository.findByUserIdAndDateBetween(
+                    user.getId(), unMesAtras, LocalDateTime.now());
+
+            // Calcular kilometraje total del último mes
+            double totalKmUltimoMes = transportesUltimoMes.stream()
+                    .mapToDouble(Transport::getKilometers)
+                    .sum();
+
+            logger.info("Meta ID {}: Kilómetros totales del último mes: {} km",
+                    meta.getId(), totalKmUltimoMes);
+
+            // Actualizar el valor actual
+            meta.setValorActual(totalKmUltimoMes);
+
+            // Establecer valor inicial basado en si es reducción o incremento
+            boolean esReduccion = isReductionMetric(meta.getTipo(), meta.getMetrica());
+
+            if (meta.getValorInicial() == null || meta.getValorInicial() < 1.0) {
+                if (esReduccion) {
+                    // Para reducción, valor inicial > valor objetivo
+                    double valorInicial = Math.max(totalKmUltimoMes, meta.getValorObjetivo() * 1.2);
+                    meta.setValorInicial(valorInicial);
+                } else {
+                    // Para incremento, valor inicial = 0
+                    meta.setValorInicial(0.0);
+                }
+
+                logger.info("Meta ID {}: Estableciendo valor inicial: {} km para meta de {}",
+                        meta.getId(), meta.getValorInicial(), esReduccion ? "reducción" : "incremento");
+            }
+        }
     }
 
     /**
@@ -793,7 +831,6 @@ public class MetaServiceImp implements MetaService {
                 .mapToDouble(Transport::getKilometers)
                 .sum();
 
-        // Asumir un costo promedio de transporte por km
         double costoPorKm = 4.0; // MXN por km
 
         return kmSostenible * costoPorKm;
@@ -1192,5 +1229,40 @@ public class MetaServiceImp implements MetaService {
                         .build());
                 return recommendations;
         }
+    }
+
+// En backend/src/main/java/com/lilim/ecotracker/features/metas/service/MetaServiceImp.java
+
+    @Transactional
+    @Override
+    public List<MetaDTO> updateAutomaticMetasForType(String tipo) {
+        logger.info("Actualizando metas automáticas de tipo: {}", tipo);
+
+        // Obtener el usuario actual
+        User currentUser = userService.getCurrentUser();
+
+        // Buscar todas las metas automáticas en progreso del tipo especificado para el usuario actual
+        List<Meta> metasAutomaticas = metaRepository.findByTipoAndTipoEvaluacionAndEstadoAndUserId(
+                tipo, "automatica", "en_progreso", currentUser.getId());
+
+        logger.info("Encontradas {} metas de tipo {} para usuario {} para actualizar",
+                metasAutomaticas.size(), tipo, currentUser.getUsername());
+
+        List<Meta> metasActualizadas = new ArrayList<>();
+
+        for (Meta meta : metasAutomaticas) {
+            try {
+                logger.info("Actualizando meta ID: {}, título: {}", meta.getId(), meta.getTitulo());
+                updateAutomaticProgress(meta);
+                metasActualizadas.add(metaRepository.save(meta));
+            } catch (Exception e) {
+                logger.error("Error actualizando meta {}: {}", meta.getId(), e.getMessage());
+            }
+        }
+
+        // Convertir a DTOs y devolver
+        return metasActualizadas.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 }

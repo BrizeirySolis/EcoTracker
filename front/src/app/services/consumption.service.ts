@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ElectricityConsumption, WaterConsumption, TransportUsage, ConsumptionSummary } from '../models/consumption.model';
 import { Observable, throwError } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, tap } from 'rxjs/operators'; // Añadido 'tap'
 import { AuthService } from './auth.service';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
+import { MetaService } from './meta.service'; // Importar MetaService
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,8 @@ export class ConsumptionService {
   constructor(
     private http: HttpClient,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private metaService: MetaService // Inyectar el servicio de meta
   ) {}
 
   /**
@@ -60,6 +62,11 @@ export class ConsumptionService {
   saveElectricityConsumption(data: ElectricityConsumption): Observable<ElectricityConsumption> {
     return this.http.post<ElectricityConsumption>(`${this.API_URL}/electricity`, data)
       .pipe(
+        // Notificar al servicio de meta que se ha guardado un consumo de electricidad
+        tap(() => {
+          this.metaService.notifyConsumptionUpdated('electricidad');
+          console.log('Consumo de electricidad guardado, notificación enviada');
+        }),
         catchError(this.handleError.bind(this))
       );
   }
@@ -87,6 +94,11 @@ export class ConsumptionService {
   saveWaterConsumption(data: WaterConsumption): Observable<WaterConsumption> {
     return this.http.post<WaterConsumption>(`${this.API_URL}/water`, data)
       .pipe(
+        // Notificar al servicio de meta que se ha guardado un consumo de agua
+        tap(() => {
+          this.metaService.notifyConsumptionUpdated('agua');
+          console.log('Consumo de agua guardado, notificación enviada');
+        }),
         catchError(this.handleError.bind(this))
       );
   }
@@ -114,6 +126,11 @@ export class ConsumptionService {
   saveTransportUsage(data: TransportUsage): Observable<TransportUsage> {
     return this.http.post<TransportUsage>(`${this.API_URL}/transport`, data)
       .pipe(
+        // Notificar al servicio de meta que se ha guardado un consumo de transporte
+        tap(() => {
+          this.metaService.notifyConsumptionUpdated('transporte');
+          console.log('Consumo de transporte guardado, notificación enviada');
+        }),
         catchError(this.handleError.bind(this))
       );
   }

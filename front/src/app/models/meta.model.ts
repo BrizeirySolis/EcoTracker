@@ -41,8 +41,6 @@ export const TIPOS_META: Record<string, string> = {
   'agua': 'Agua',
   'electricidad': 'Electricidad',
   'transporte': 'Transporte',
-  'combinada': 'Combinada',
-  'otro': 'Otro'
 };
 
 /**
@@ -73,32 +71,34 @@ export const METRICAS_POR_TIPO: Record<string, {
 }[]> = {
   'agua': [
     { metrica: 'consumo_total', descripcion: 'Reducción del consumo total', unidad: 'm3' },
-    { metrica: 'costo_unitario', descripcion: 'Reducción del costo unitario', unidad: 'costo' },
-    { metrica: 'promedio_movil', descripcion: 'Reducción del promedio móvil', unidad: 'm3' },
-    { metrica: 'benchmark', descripcion: 'Consumo bajo benchmark regional', unidad: 'porcentaje' },
-    { metrica: 'emisiones', descripcion: 'Reducción de emisiones CO2', unidad: 'co2' }
+    //{ metrica: 'costo_unitario', descripcion: 'Reducción del costo unitario', unidad: 'costo' },
+    //{ metrica: 'promedio_movil', descripcion: 'Reducción del promedio móvil', unidad: 'm3' },
+    //{ metrica: 'benchmark', descripcion: 'Consumo bajo benchmark regional', unidad: 'porcentaje' },
+    //{ metrica: 'emisiones', descripcion: 'Reducción de emisiones CO2', unidad: 'co2' }
   ],
   'electricidad': [
     { metrica: 'consumo_total', descripcion: 'Reducción del consumo total', unidad: 'kwh' },
-    { metrica: 'costo_unitario', descripcion: 'Reducción del costo unitario', unidad: 'costo' },
-    { metrica: 'promedio_movil', descripcion: 'Reducción del promedio móvil', unidad: 'kwh' },
-    { metrica: 'benchmark', descripcion: 'Consumo bajo benchmark regional', unidad: 'porcentaje' },
-    { metrica: 'emisiones', descripcion: 'Reducción de emisiones CO2', unidad: 'co2' }
+    //{ metrica: 'costo_unitario', descripcion: 'Reducción del costo unitario', unidad: 'costo' },
+    //{ metrica: 'promedio_movil', descripcion: 'Reducción del promedio móvil', unidad: 'kwh' },
+    //{ metrica: 'benchmark', descripcion: 'Consumo bajo benchmark regional', unidad: 'porcentaje' },
+    //{ metrica: 'emisiones', descripcion: 'Reducción de emisiones CO2', unidad: 'co2' }
   ],
   'transporte': [
     { metrica: 'porcentaje_sostenible', descripcion: 'Incremento de transporte sostenible', unidad: 'porcentaje' },
     { metrica: 'reduccion_combustion', descripcion: 'Reducción km en vehículos combustión', unidad: 'km' },
-    { metrica: 'emisiones', descripcion: 'Reducción de emisiones CO2', unidad: 'co2' },
-    { metrica: 'eficiencia', descripcion: 'Mejora de eficiencia (kg CO2/km)', unidad: 'co2' },
+    //{ metrica: 'km_bicicleta', descripcion: 'Incremento uso de bicicleta', unidad: 'km' },
+    //{ metrica: 'uso_bicicleta', descripcion: 'Kilómetros en bicicleta', unidad: 'km' },
+    //{ metrica: 'emisiones', descripcion: 'Reducción de emisiones CO2', unidad: 'co2' },
+    //{ metrica: 'eficiencia', descripcion: 'Mejora de eficiencia (kg CO2/km)', unidad: 'co2' },
     { metrica: 'costo', descripcion: 'Reducción del costo de transporte', unidad: 'costo' }
   ],
   'combinada': [
-    { metrica: 'huella_carbono', descripcion: 'Reducción de la huella de carbono total', unidad: 'co2' },
-    { metrica: 'sostenibilidad', descripcion: 'Mejora del índice de sostenibilidad', unidad: 'porcentaje' },
-    { metrica: 'ahorro_total', descripcion: 'Ahorro económico total', unidad: 'costo' }
+    //{ metrica: 'huella_carbono', descripcion: 'Reducción de la huella de carbono total', unidad: 'co2' },
+    //{ metrica: 'sostenibilidad', descripcion: 'Mejora del índice de sostenibilidad', unidad: 'porcentaje' },
+    //{ metrica: 'ahorro_total', descripcion: 'Ahorro económico total', unidad: 'costo' }
   ],
   'otro': [
-    { metrica: 'personalizada', descripcion: 'Métrica personalizada', unidad: 'unidad' }
+    //{ metrica: 'personalizada', descripcion: 'Métrica personalizada', unidad: 'unidad' }
   ]
 };
 
@@ -113,35 +113,35 @@ export function calcularPorcentajeMeta(meta: Meta): number {
     return 0;
   }
 
-  // Determinar si es una meta de reducción
-  const esReduccion = (meta.tipo === 'agua' || meta.tipo === 'electricidad' ||
-    (meta.tipo === 'transporte' &&
-      (meta.unidad === 'co2' || meta.unidad === 'costo')));
+  // Determinar si es una meta de reducción basado en tipo y métrica
+  const esReduccion = determinarSiEsReduccion(meta);
 
-  // Si es una meta de reducción (donde menos es mejor)
+  // Si es meta de reducción (donde menos es mejor)
   if (esReduccion) {
     // Si ya alcanzamos o superamos el objetivo
     if (meta.valorActual <= meta.valorObjetivo) {
       return 100;
     }
 
-    // Si tenemos valor inicial, usarlo para cálculo preciso
-    if (meta.valorInicial && meta.valorInicial > 0) {
+    // Si tenemos valor inicial y no es "No disponible"
+    // @ts-ignore
+    if (meta.valorInicial && meta.valorInicial !== 'No disponible' && +meta.valorInicial > 0) {
       // Cálculo basado en cuánto hemos reducido del total necesario
-      const reduccionTotal = meta.valorInicial - meta.valorObjetivo;
-      const reduccionActual = meta.valorInicial - meta.valorActual;
+      const valorInicialNum = typeof meta.valorInicial === 'string'
+        ? parseFloat(meta.valorInicial)
+        : meta.valorInicial;
+
+      const reduccionTotal = valorInicialNum - meta.valorObjetivo;
+      const reduccionActual = valorInicialNum - meta.valorActual;
 
       // Evitar división por cero
       if (reduccionTotal <= 0) return 0;
 
-      // Calcular porcentaje y redondear
+      // Calcular porcentaje y limitar entre 0 y 100
       const porcentaje = (reduccionActual / reduccionTotal) * 100;
       return Math.round(Math.max(0, Math.min(100, porcentaje)));
-    }
-
-    // Si no tenemos valor inicial, usar estimación
-    else {
-      // Estimamos que el valor inicial sería 30% mayor que el objetivo
+    } else {
+      // Sin valor inicial válido, usar estimación
       const valorInicialEstimado = meta.valorObjetivo * 1.3;
 
       // Usamos esta estimación para calcular
@@ -153,10 +153,9 @@ export function calcularPorcentajeMeta(meta: Meta): number {
       const porcentaje = (reduccionActual / reduccionTotal) * 100;
       return Math.round(Math.max(0, Math.min(100, porcentaje)));
     }
-  }
+  } else {
+    // Para metas de incremento (donde más es mejor)
 
-  // Para metas de incremento (donde más es mejor)
-  else {
     // Evitar división por cero
     if (meta.valorObjetivo <= 0) return 0;
 
@@ -171,27 +170,33 @@ export function calcularPorcentajeMeta(meta: Meta): number {
  * Ya que no tenemos acceso directo a la propiedad 'metrica'
  */
 function determinarSiEsReduccion(meta: Meta): boolean {
-  // Para agua y electricidad, son metas de reducción
+  // Para agua y electricidad, normalmente son metas de reducción
   if (meta.tipo === 'agua' || meta.tipo === 'electricidad') {
-    return true; // Asumimos que todas las metas de agua y electricidad son de reducción
+    return true;
   }
 
-  // Para transporte, depende de la unidad y otros indicadores
-  else if (meta.tipo === 'transporte') {
-    // Si la unidad es km y el objetivo es menor que algún valor de referencia,
-    // probablemente es una meta de reducción de km en vehículos
-    if (meta.unidad === 'km' && meta.valorObjetivo < 100) {
+  // Para transporte, depende de la métrica
+  if (meta.tipo === 'transporte') {
+    // Métricas de bicicleta y sostenibilidad son de incremento
+    if (meta.metrica === 'km_bicicleta' ||
+      meta.metrica === 'uso_bicicleta' ||
+      meta.metrica === 'porcentaje_sostenible') {
+      return false;
+    }
+
+    // Estas métricas son de reducción
+    if (meta.metrica === 'reduccion_combustion' ||
+      meta.metrica === 'emisiones' ||
+      meta.metrica === 'costo') {
       return true;
     }
-    // Si la unidad es CO2 o costo, probablemente es reducción
-    else if (meta.unidad === 'co2' || meta.unidad === 'costo') {
-      return true;
-    }
-    // En otros casos, probablemente es de incremento (ej: aumentar % de transporte sostenible)
-    return false;
+
+    // Si la métrica no está especificada o no reconocida,
+    // verificar por la relación entre valor objetivo y actual
+    return meta.valorObjetivo < meta.valorActual;
   }
 
-  // Para tipos combinados u otros, evaluamos por el valor objetivo vs actual
+  // Por defecto para otros tipos
   return meta.valorObjetivo < meta.valorActual;
 }
 
