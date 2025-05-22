@@ -113,57 +113,60 @@ export function calcularPorcentajeMeta(meta: Meta): number {
     return 0;
   }
 
-  // Determinar si es una meta de reducción basado en tipo y métrica
+  // Determinar si es una meta de reducción según tipo y métrica
   const esReduccion = determinarSiEsReduccion(meta);
+  console.log(`Calculando progreso para meta tipo=${meta.tipo}, métrica=${meta.metrica}`);
+  console.log(`valorInicial=${meta.valorInicial}, valorActual=${meta.valorActual}, valorObjetivo=${meta.valorObjetivo}`);
+  console.log(`¿Es reducción? ${esReduccion}`);
 
-  // Si es meta de reducción (donde menos es mejor)
+  // Para metas donde el valor inicial es demasiado pequeño, usamos una lógica simplificada
+  if (!meta.valorInicial || meta.valorInicial <= 0.1) {
+    if (esReduccion) {
+      // Para metas de reducción, comparamos actual contra objetivo directamente
+      if (meta.valorActual <= meta.valorObjetivo) {
+        return 100; // Meta alcanzada
+      }
+      // Usamos una escala donde el 200% del objetivo es 0% de progreso
+      // y el 100% del objetivo es 100% de progreso
+      const proporcion = meta.valorActual / meta.valorObjetivo;
+      const porcentaje = Math.max(0, 100 * (2 - proporcion));
+      return Math.min(100, porcentaje);
+    } else {
+      // Para metas de incremento
+      if (meta.valorObjetivo <= 0) return 0;
+      const porcentaje = (meta.valorActual / meta.valorObjetivo) * 100;
+      return Math.min(100, Math.max(0, porcentaje));
+    }
+  }
+
+  // Para metas con valor inicial válido
   if (esReduccion) {
-    // Si ya alcanzamos o superamos el objetivo
+    // Meta alcanzada
     if (meta.valorActual <= meta.valorObjetivo) {
       return 100;
     }
 
-    // Si tenemos valor inicial y no es "No disponible"
-    // @ts-ignore
-    if (meta.valorInicial && meta.valorInicial !== 'No disponible' && +meta.valorInicial > 0) {
-      // Cálculo basado en cuánto hemos reducido del total necesario
-      const valorInicialNum = typeof meta.valorInicial === 'string'
-        ? parseFloat(meta.valorInicial)
-        : meta.valorInicial;
-
-      const reduccionTotal = valorInicialNum - meta.valorObjetivo;
-      const reduccionActual = valorInicialNum - meta.valorActual;
-
-      // Evitar división por cero
-      if (reduccionTotal <= 0) return 0;
-
-      // Calcular porcentaje y limitar entre 0 y 100
-      const porcentaje = (reduccionActual / reduccionTotal) * 100;
-      return Math.round(Math.max(0, Math.min(100, porcentaje)));
-    } else {
-      // Sin valor inicial válido, usar estimación
-      const valorInicialEstimado = meta.valorObjetivo * 1.3;
-
-      // Usamos esta estimación para calcular
-      const reduccionTotal = valorInicialEstimado - meta.valorObjetivo;
-      const reduccionActual = valorInicialEstimado - meta.valorActual;
-
-      if (reduccionTotal <= 0) return 0;
-
-      const porcentaje = (reduccionActual / reduccionTotal) * 100;
-      return Math.round(Math.max(0, Math.min(100, porcentaje)));
-    }
-  } else {
-    // Para metas de incremento (donde más es mejor)
+    // Calcular reducción objetivo y actual
+    const reduccionTotal = meta.valorInicial - meta.valorObjetivo;
+    const reduccionActual = Math.max(0, meta.valorInicial - meta.valorActual);
 
     // Evitar división por cero
-    if (meta.valorObjetivo <= 0) return 0;
+    if (reduccionTotal <= 0) return 0;
 
-    // El progreso es el porcentaje del objetivo que hemos alcanzado
-    const porcentaje = (meta.valorActual / meta.valorObjetivo) * 100;
-    return Math.round(Math.max(0, Math.min(100, porcentaje)));
+    const porcentaje = (reduccionActual / reduccionTotal) * 100;
+    return Math.min(100, Math.max(0, porcentaje));
+  } else {
+    // Para metas de incremento
+    const incrementoTotal = meta.valorObjetivo - meta.valorInicial;
+    const incrementoActual = Math.max(0, meta.valorActual - meta.valorInicial);
+
+    if (incrementoTotal <= 0) return 0;
+
+    const porcentaje = (incrementoActual / incrementoTotal) * 100;
+    return Math.min(100, Math.max(0, porcentaje));
   }
 }
+
 
 /**
  * Determina si una meta es de reducción basándose en su tipo y valores

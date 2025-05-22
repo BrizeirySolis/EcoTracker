@@ -1,0 +1,119 @@
+front/src/
+├── app
+│   ├── app.component.css
+│   ├── app.component.html
+│   ├── app.component.spec.ts
+│   ├── app.component.ts
+│   ├── app.config.ts
+│   ├── app.routes.ts
+│   ├── components
+│   │   ├── bitacoras
+│   │   │   ├── bitacora-detail
+│   │   │   │   └── bitacora-detail.component.ts
+│   │   │   ├── bitacora-form
+│   │   │   │   ├── bitacora-form.component.css
+│   │   │   │   ├── bitacora-form.component.html
+│   │   │   │   └── bitacora-form.component.ts
+│   │   │   ├── bitacora-list
+│   │   │   │   └── bitacora-list.component.ts
+│   │   │   └── bitacora-timeline
+│   │   │       └── bitacora-timeline.component.ts
+│   │   ├── consumption-modules
+│   │   │   ├── electricity-dashboard
+│   │   │   │   ├── electricity-dashboard.component.html
+│   │   │   │   ├── electricity-dashboard.component.scss
+│   │   │   │   └── electricity-dashboard.component.ts
+│   │   │   ├── transport-dashboard
+│   │   │   │   ├── transport-dashboard.component.html
+│   │   │   │   ├── transport-dashboard.component.scss
+│   │   │   │   └── transport-dashboard.component.ts
+│   │   │   └── water-dashboard
+│   │   │       ├── water-dashboard.component.html
+│   │   │       ├── water-dashboard.component.scss
+│   │   │       └── water-dashboard.component.ts
+│   │   ├── consumption-tab
+│   │   │   ├── consumption-tab.component.html
+│   │   │   ├── consumption-tab.component.scss
+│   │   │   └── consumption-tab.component.ts
+│   │   ├── dashboard
+│   │   │   ├── dashboard.component.html
+│   │   │   ├── dashboard.component.scss
+│   │   │   └── dashboard.component.ts
+│   │   ├── electricity-form
+│   │   │   └── electricity-form.component.ts
+│   │   ├── habits
+│   │   │   └── habits.component.ts
+│   │   ├── home
+│   │   │   ├── home.component.html
+│   │   │   ├── home.component.scss
+│   │   │   └── home.component.ts
+│   │   ├── kpi-card
+│   │   │   └── kpi-card.component.ts
+│   │   ├── kpi-cards
+│   │   │   ├── kpi-card
+│   │   │   │   ├── kpi-card.component.html
+│   │   │   │   ├── kpi-card.component.scss
+│   │   │   │   └── kpi-card.component.ts
+│   │   │   └── kpi-pagination
+│   │   │       ├── kpi-pagination.component.html
+│   │   │       ├── kpi-pagination.component.scss
+│   │   │       └── kpi-pagination.component.ts
+│   │   ├── login
+│   │   │   └── login.component.ts
+│   │   ├── metas
+│   │   │   ├── meta-detail
+│   │   │   │   ├── meta-detail.component.html
+│   │   │   │   ├── meta-detail.component.scss
+│   │   │   │   └── meta-detail.component.ts
+│   │   │   ├── meta-form
+│   │   │   │   ├── meta-form.component.html
+│   │   │   │   ├── meta-form.component.scss
+│   │   │   │   └── meta-form.component.ts
+│   │   │   └── meta-list
+│   │   │       ├── meta-list.component.html
+│   │   │       ├── meta-list.component.scss
+│   │   │       └── meta-list.component.ts
+│   │   ├── navbar
+│   │   │   └── navbar.component.ts
+│   │   ├── profile
+│   │   │   └── profile.component.ts
+│   │   ├── register
+│   │   │   └── register.component.ts
+│   │   ├── shared
+│   │   │   └── image-upload
+│   │   │       └── image-upload.component.ts
+│   │   ├── transport-form
+│   │   │   └── transport-form.component.ts
+│   │   └── water-form
+│   │       └── water-form.component.ts
+│   ├── models
+│   │   ├── analytics.model.ts
+│   │   ├── auth.model.ts
+│   │   ├── bitacora.model.ts
+│   │   ├── consumption.model.ts
+│   │   ├── dashboard.model.ts
+│   │   ├── kpi.model.ts
+│   │   └── meta.model.ts
+│   └── services
+│       ├── analytics
+│       │   ├── data-processing.service.ts
+│       │   ├── electricity-analytics.service.ts
+│       │   ├── transport-analytics.service.ts
+│       │   └── water-analytics.service.ts
+│       ├── auth.guard.ts
+│       ├── auth.interceptor.ts
+│       ├── auth.service.ts
+│       ├── bitacora.service.ts
+│       ├── consumption.service.ts
+│       ├── image-compression.service.ts
+│       ├── meta.service.ts
+│       └── visualization
+│           └── sparkline.service.ts
+├── environments
+│   ├── environment.prod.ts
+│   └── environment.ts
+├── index.html
+├── main.ts
+└── styles.css
+
+38 directories, 79 files

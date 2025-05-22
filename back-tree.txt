@@ -1,0 +1,143 @@
+backend/src/
+├── main
+│   ├── java
+│   │   └── com
+│   │       └── lilim
+│   │           └── ecotracker
+│   │               ├── EcoTrackerApplication.java
+│   │               ├── common
+│   │               │   ├── exception
+│   │               │   │   └── GlobalExceptionHandler.java
+│   │               │   └── model
+│   │               │       └── BaseEntity.java
+│   │               ├── config
+│   │               │   ├── AngularRoutesController.java
+│   │               │   ├── BitacoraWebConfig.java
+│   │               │   ├── CorsConfig.java
+│   │               │   ├── InitialDataConfig.java
+│   │               │   ├── TestDataGeneratorService.java
+│   │               │   └── WebMvcConfig.java
+│   │               ├── features
+│   │               │   ├── bitacora
+│   │               │   │   ├── controller
+│   │               │   │   │   └── BitacoraController.java
+│   │               │   │   ├── dto
+│   │               │   │   │   └── BitacoraDTO.java
+│   │               │   │   ├── model
+│   │               │   │   │   └── Bitacora.java
+│   │               │   │   ├── repository
+│   │               │   │   │   └── BitacoraRepository.java
+│   │               │   │   └── service
+│   │               │   │       ├── BitacoraServiceImp.java
+│   │               │   │       └── ImagenServiceImp.java
+│   │               │   ├── electricity
+│   │               │   │   ├── controller
+│   │               │   │   │   └── ElectricityController.java
+│   │               │   │   ├── model
+│   │               │   │   │   └── Electricity.java
+│   │               │   │   ├── repository
+│   │               │   │   │   └── ElectricityRepository.java
+│   │               │   │   └── service
+│   │               │   │       ├── ElectricityService.java
+│   │               │   │       └── ElectricityServiceImpl.java
+│   │               │   ├── metas
+│   │               │   │   ├── controller
+│   │               │   │   │   └── MetaController.java
+│   │               │   │   ├── dto
+│   │               │   │   │   ├── MetaDTO.java
+│   │               │   │   │   ├── MetaRecommendationDTO.java
+│   │               │   │   │   └── MetaUpdateProgresoDTO.java
+│   │               │   │   ├── model
+│   │               │   │   │   └── Meta.java
+│   │               │   │   ├── repository
+│   │               │   │   │   └── MetaRepository.java
+│   │               │   │   └── service
+│   │               │   │       ├── MetaService.java
+│   │               │   │       └── MetaServiceImp.java
+│   │               │   ├── summary
+│   │               │   │   ├── controller
+│   │               │   │   │   ├── ConsumptionAnalyticsController.java
+│   │               │   │   │   └── SummaryController.java
+│   │               │   │   ├── dto
+│   │               │   │   │   ├── ConsumptionAnalyticsDTO.java
+│   │               │   │   │   └── ConsumptionSummaryDTO.java
+│   │               │   │   └── service
+│   │               │   │       └── ConsumptionAnalyticsService.java
+│   │               │   ├── transport
+│   │               │   │   ├── controller
+│   │               │   │   │   └── TransportController.java
+│   │               │   │   ├── model
+│   │               │   │   │   └── Transport.java
+│   │               │   │   ├── repository
+│   │               │   │   │   └── TransportRepository.java
+│   │               │   │   └── service
+│   │               │   │       ├── TransportService.java
+│   │               │   │       └── TransportServiceImpl.java
+│   │               │   └── water
+│   │               │       ├── controller
+│   │               │       │   └── WaterController.java
+│   │               │       ├── model
+│   │               │       │   └── Water.java
+│   │               │       ├── repository
+│   │               │       │   └── WaterRepository.java
+│   │               │       └── service
+│   │               │           ├── WaterService.java
+│   │               │           └── WaterServiceImpl.java
+│   │               └── security
+│   │                   ├── config
+│   │                   │   └── WebSecurityConfig.java
+│   │                   ├── controller
+│   │                   │   └── AuthController.java
+│   │                   ├── dto
+│   │                   │   ├── JwtResponse.java
+│   │                   │   ├── LoginRequest.java
+│   │                   │   ├── MessageResponse.java
+│   │                   │   └── SignupRequest.java
+│   │                   ├── jwt
+│   │                   │   ├── AuthEntryPointJwt.java
+│   │                   │   ├── AuthTokenFilter.java
+│   │                   │   └── JwtUtils.java
+│   │                   ├── model
+│   │                   │   └── User.java
+│   │                   ├── repository
+│   │                   │   └── UserRepository.java
+│   │                   └── service
+│   │                       ├── UserDetailsServiceImpl.java
+│   │                       └── UserService.java
+│   └── resources
+│       ├── application-prod.properties
+│       ├── application.properties
+│       └── static
+│           ├── chunk-43LQXV7X.js
+│           ├── chunk-5EBO6WDW.js
+│           ├── chunk-7LIQ6UR3.js
+│           ├── chunk-DZJOM554.js
+│           ├── chunk-FMM5U7V5.js
+│           ├── chunk-FNBE2EJI.js
+│           ├── chunk-FV3CLQ4X.js
+│           ├── chunk-I7YVQWIT.js
+│           ├── chunk-PGSWVA4V.js
+│           ├── chunk-RCBTB2CG.js
+│           ├── chunk-SRF6OMH5.js
+│           ├── chunk-U57CEONK.js
+│           ├── chunk-VNDPJNBL.js
+│           ├── chunk-W4AZVQAT.js
+│           ├── chunk-WQQHZ46V.js
+│           ├── chunk-XH4V6NSR.js
+│           ├── chunk-ZHNWNGVP.js
+│           ├── chunk-ZK23IUWG.js
+│           ├── favicon.ico
+│           ├── index.html
+│           ├── main-2O5YIDI4.js
+│           ├── polyfills-FFHMD2TL.js
+│           └── styles-VJZAWGNC.css
+└── test
+    └── java
+        └── com
+            └── lilim
+                └── ecotracker
+                    ├── EcoTrackerApplicationTests.java
+                    └── service
+                        └── BitacoraServiceTest.java
+
+58 directories, 83 files
