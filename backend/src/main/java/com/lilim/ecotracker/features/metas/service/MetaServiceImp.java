@@ -87,7 +87,6 @@ public class MetaServiceImp implements MetaService {
         meta.setTitulo(metaDTO.getTitulo());
         meta.setDescripcion(metaDTO.getDescripcion());
         meta.setTipo(metaDTO.getTipo());
-        meta.setValorObjetivo(metaDTO.getValorObjetivo());
         meta.setUnidad(metaDTO.getUnidad());
         meta.setMetrica(metaDTO.getMetrica()); // Asegurar que esto se establece correctamente
         meta.setFechaInicio(metaDTO.getFechaInicio());
@@ -97,6 +96,28 @@ public class MetaServiceImp implements MetaService {
         // Determinar el valor inicial basado en el último mes
         Double valorInicial = obtenerValorActualConsumo(metaDTO.getTipo(), metaDTO.getMetrica());
         meta.setValorInicial(valorInicial);
+
+        // CORRECCIÓN: Establecer el valor objetivo para metas de reducción en transporte
+        if ("transporte".equals(metaDTO.getTipo()) && isReductionMetric(metaDTO.getTipo(), metaDTO.getMetrica())) {
+            // Si el usuario no proporcionó un valor objetivo específico o el valor es muy cercano al inicial
+            // calculamos automáticamente el objetivo como el 80% del valor inicial (reducción del 20%)
+            if (metaDTO.getValorObjetivo() <= 0 || 
+                (Math.abs(metaDTO.getValorObjetivo() - valorInicial) < 1.0) || 
+                metaDTO.getValorObjetivo() > valorInicial) {
+                
+                double objetivoReduccion = valorInicial * 0.8; // 20% de reducción
+                meta.setValorObjetivo(objetivoReduccion);
+                logger.info("Valor objetivo para meta de reducción calculado automáticamente: {} (80% de {})",
+                        objetivoReduccion, valorInicial);
+            } else {
+                // Si el usuario proporcionó un valor objetivo razonable, lo usamos
+                meta.setValorObjetivo(metaDTO.getValorObjetivo());
+                logger.info("Usando valor objetivo proporcionado por el usuario: {}", metaDTO.getValorObjetivo());
+            }
+        } else {
+            // Para el resto de metas, usamos el valor proporcionado por el usuario
+            meta.setValorObjetivo(metaDTO.getValorObjetivo());
+        }
 
         // Para metas de incremento, empezamos en 0, para otras usamos el último valor conocido
         if (isIncrementMetric(metaDTO.getTipo(), metaDTO.getMetrica())) {
@@ -480,8 +501,6 @@ public class MetaServiceImp implements MetaService {
             logger.info("Meta ID {}: Meta en progreso ({}% completado)", meta.getId(),
                     Math.min(100, Math.max(0, Math.round(progreso))));
         }
-
-                // Información sobre el cambio de estado        if (!meta.getEstado().equals(estadoAnterior)) {            logger.info("Estado de la meta ID {} actualizado: {} -> {}",                    meta.getId(), estadoAnterior, meta.getEstado());        }
     }
 
     /**
@@ -737,47 +756,67 @@ public class MetaServiceImp implements MetaService {
                     user.getId(), fechaCreacionMeta);
             logger.info("Encontrados {} registros posteriores a la creación de la meta ({})",
                     registrosDesdeCreacion.size(), fechaCreacionMeta);
-
-            // Obtener el valor KPI de kilómetros recorridos            
-            Double valorKpi = obtenerValorKpiTransporte(user);
             
-            // IMPORTANTE: Solo establecer el valorInicial si no existe o es muy pequeño
-            // Esto evita sobrescribir el valor establecido al crear la meta
-            if ((meta.getValorInicial() == null || meta.getValorInicial() <= 0.1) && valorKpi != null && valorKpi > 0) {
-                // Usar el valor KPI (que debería ser cercano a 395.9 km según la imagen)
-                meta.setValorInicial(valorKpi);
-                logger.info("Valor inicial establecido desde KPI: {} km", valorKpi);
-            } else if (meta.getValorInicial() == null || meta.getValorInicial() <= 0.1) {
-                // Obtener todos los registros antes de la fecha de creación
-                List<Transport> registrosAntesCreacion = transportRepository.findByUserIdAndDateBefore(
-                        user.getId(), fechaCreacionMeta);
-                logger.info("Encontrados {} registros anteriores a la creación de la meta",
-                        registrosAntesCreacion.size());
-
-                // Calcular el valor inicial según la métrica
-                double valorInicial = calcularValorInicialTransporte(registrosAntesCreacion, metrica);
-                meta.setValorInicial(valorInicial > 0 ? valorInicial : 395.9); // Usar el valor aproximado del KPI si no hay datos
-                logger.info("Valor inicial recalculado: {}", meta.getValorInicial());
+            // MANTENER el valor inicial tal como está, sin cambiarlo
+            if (meta.getValorInicial() == null || meta.getValorInicial() <= 0.1) {
+                // Solo si no tiene valor inicial, obtenerlo del KPI
+                Double valorKpi = obtenerValorKpiTransporte(user);
+                if (valorKpi != null && valorKpi > 0) {
+                    meta.setValorInicial(valorKpi);
+                    logger.info("Valor inicial establecido desde KPI: {} km", valorKpi);
+                } else {
+                    // Si no hay KPI disponible, intentar obtener del historial
+                    Double valorHistorico = obtenerValorReferenciaActual(meta.getTipo());
+                    if (valorHistorico > 0) {
+                        meta.setValorInicial(valorHistorico);
+                        logger.info("Valor inicial establecido desde historial: {} km", valorHistorico);
+                    } else {
+                        // Si no hay datos históricos, usar un valor muy pequeño para evitar divisiones por cero
+                        meta.setValorInicial(0.1);
+                        logger.warn("No hay datos históricos disponibles. Usando valor mínimo de 0.1 para evitar divisiones por cero.");
+                    }
+                }
             } else {
                 logger.info("Manteniendo valor inicial existente: {} km", meta.getValorInicial());
             }
 
-            // Calcular el valor actual según la métrica
+            // Verificar que el valor objetivo sea adecuado para una meta de reducción
+            boolean esReduccion = isReductionMetric(meta.getTipo(), metrica);
+            if (esReduccion && meta.getValorObjetivo() >= meta.getValorInicial()) {
+                // Si el objetivo es mayor que el inicial y es una meta de reducción, algo está mal
+                // Corregir estableciendo el objetivo al 80% del inicial
+                meta.setValorObjetivo(meta.getValorInicial() * 0.8);
+                logger.info("Corrigiendo valor objetivo para meta de reducción: {} (80% de {})",
+                        meta.getValorObjetivo(), meta.getValorInicial());
+            }
+
+            // NUEVO ENFOQUE: Para metas de reducción, el valor actual representa el consumo total nuevo
+            // y la reducción lograda es la diferencia entre el valor inicial y el consumo actual
+            double consumoActual = 0.0;
+            
+            // Calcular el consumo actual según la métrica
             if ("reduccion_combustion".equals(metrica) || metrica == null) {
                 // Para metas de reducción de combustión, calcular km en vehículos de combustión
-                double kmCombustionDesdeCreacion = registrosDesdeCreacion.stream()
+                consumoActual = registrosDesdeCreacion.stream()
                         .filter(t -> "car".equals(t.getTransportType()))
                         .mapToDouble(Transport::getKilometers)
                         .sum();
-
-                // Asegurar que el valor actual tenga sentido según el tipo de meta
-                if (kmCombustionDesdeCreacion > 0) {
-                    meta.setValorActual(kmCombustionDesdeCreacion);
-                    logger.info("Valor actual (combustión desde creación): {} km", kmCombustionDesdeCreacion);
-                } else if (meta.getValorActual() == null || meta.getValorActual() <= 0) {
-                    // Si no hay datos, usar un valor pequeño para mostrar progreso
-                    meta.setValorActual(Math.max(18.0, meta.getValorObjetivo() * 0.1));
-                    logger.info("Valor actual establecido a valor por defecto: {} km", meta.getValorActual());
+                
+                logger.info("Consumo actual (combustión desde creación): {} km", consumoActual);
+                
+                // Actualizar el valor actual
+                if (esReduccion) {
+                    // Para metas de REDUCCIÓN: valorActual representa la REDUCCIÓN LOGRADA (positivo es mejor)
+                    // Si hemos consumido menos que el inicial, hay reducción positiva
+                    // Si hemos consumido más que el inicial, hay reducción negativa
+                    double reduccionLograda = meta.getValorInicial() - consumoActual;
+                    meta.setValorActual(reduccionLograda);
+                    logger.info("Reducción lograda: {} km (valor inicial {} - consumo actual {})", 
+                                reduccionLograda, meta.getValorInicial(), consumoActual);
+                } else {
+                    // Para metas de INCREMENTO: valorActual es directamente el consumo
+                    meta.setValorActual(consumoActual);
+                    logger.info("Valor actual para incremento: {} km", consumoActual);
                 }
             }
             else if ("porcentaje_sostenible".equals(metrica)) {
@@ -790,31 +829,39 @@ public class MetaServiceImp implements MetaService {
                         .mapToDouble(Transport::getKilometers)
                         .sum();
 
-                double porcentajeSostenible = kmTotales > 0 ? (kmSostenibles / kmTotales) * 100 : 0.0;
-                meta.setValorActual(porcentajeSostenible);
-                logger.info("Valor actual (porcentaje sostenible): {}%", porcentajeSostenible);
+                double porcentajeActual = kmTotales > 0 ? (kmSostenibles / kmTotales) * 100 : 0.0;
+                meta.setValorActual(porcentajeActual);
+                logger.info("Valor actual (porcentaje sostenible): {}%", porcentajeActual);
             }
             else if ("costo".equals(metrica)) {
-                double costoDesdeCreacion = registrosDesdeCreacion.stream()
+                consumoActual = registrosDesdeCreacion.stream()
                         .mapToDouble(Transport::getCost)
                         .sum();
-
-                meta.setValorActual(costoDesdeCreacion);
-                logger.info("Valor actual (costo total): {} MXN", costoDesdeCreacion);
-            }
-
-            // CORRECCIÓN: Asegurar que el valor objetivo sea consistente con el valor inicial
-            if (meta.getValorObjetivo() == null || meta.getValorObjetivo() <= 0) {
-                // Si no hay objetivo definido, establecer uno razonable
-                boolean esReduccion = isReductionMetric(meta.getTipo(), metrica);
-                if (esReduccion && meta.getValorInicial() != null) {
-                    // Para metas de reducción, objetivo es un % menor que el inicial
-                    meta.setValorObjetivo(meta.getValorInicial() * 0.8); // 20% de reducción
-                    logger.info("Valor objetivo calculado para reducción: {} km", meta.getValorObjetivo());
-                } else if (!esReduccion) {
-                    // Para metas de incremento, objetivo es mayor que el inicial
-                    meta.setValorObjetivo((meta.getValorInicial() != null ? meta.getValorInicial() : 0) + 50);
-                    logger.info("Valor objetivo calculado para incremento: {} km", meta.getValorObjetivo());
+                
+                logger.info("Consumo actual (costo): {} MXN", consumoActual);
+                
+                // Para costos, similar a combustión, es una meta de reducción
+                if (esReduccion) {
+                    double reduccionLograda = meta.getValorInicial() - consumoActual;
+                    meta.setValorActual(reduccionLograda);
+                    logger.info("Reducción de costo lograda: {} MXN", reduccionLograda);
+                } else {
+                    meta.setValorActual(consumoActual);
+                }
+            } else {
+                // Para cualquier otra métrica, usamos el enfoque por defecto
+                consumoActual = registrosDesdeCreacion.stream()
+                        .mapToDouble(Transport::getKilometers)
+                        .sum();
+                
+                // Si es una meta de reducción, calcular la reducción lograda
+                if (esReduccion) {
+                    double reduccionLograda = meta.getValorInicial() - consumoActual;
+                    meta.setValorActual(reduccionLograda);
+                    logger.info("Reducción genérica lograda: {} unidades", reduccionLograda);
+                } else {
+                    meta.setValorActual(consumoActual);
+                    logger.info("Valor actual genérico: {} unidades", consumoActual);
                 }
             }
 
@@ -936,20 +983,42 @@ public class MetaServiceImp implements MetaService {
                 meta.getId(), meta.getTipo(), meta.getMetrica(), meta.getValorInicial(),
                 meta.getValorActual(), meta.getValorObjetivo(), fechaFin, esReduccion);
 
+        // Guardar estado anterior para logging
+        String estadoAnterior = meta.getEstado();
+
         // Evaluar si la meta está completada
         boolean metaCompletada = false;
 
-        // CORRECCIÓN: Verificar que todos los valores necesarios existan antes de hacer la comparación
-        if (meta.getValorActual() != null && meta.getValorObjetivo() != null) {
+        if ("transporte".equals(meta.getTipo())) {
+            // CASO ESPECIAL PARA TRANSPORTE
+            if (meta.getValorActual() != null && meta.getValorObjetivo() != null && meta.getValorInicial() != null) {
+                if (esReduccion) {
+                    // Para transporte con metas de reducción:
+                    // - valorActual ahora representa la reducción lograda
+                    // - Se completa cuando la reducción lograda >= (valorInicial - valorObjetivo)
+                    double reduccionObjetivo = meta.getValorInicial() - meta.getValorObjetivo();
+                    metaCompletada = meta.getValorActual() >= reduccionObjetivo;
+                    logger.info("Meta de transporte (reducción) - ¿Completada? {} (reducción lograda {} >= reducción objetivo {})",
+                            metaCompletada, meta.getValorActual(), reduccionObjetivo);
+                } else {
+                    // Para transporte con metas de incremento
+                    metaCompletada = meta.getValorActual() >= meta.getValorObjetivo();
+                    logger.info("Meta de transporte (incremento) - ¿Completada? {} (valorActual {} >= valorObjetivo {})",
+                            metaCompletada, meta.getValorActual(), meta.getValorObjetivo());
+                }
+            } else {
+                logger.warn("Meta ID {}: No se puede evaluar el estado porque falta algún valor necesario", meta.getId());
+            }
+        } 
+        // CASO GENERAL PARA OTROS TIPOS
+        else if (meta.getValorActual() != null && meta.getValorObjetivo() != null) {
             if (esReduccion) {
                 // Meta de reducción (menor es mejor)
-                // Completada si el valor actual es menor o igual al objetivo
                 metaCompletada = meta.getValorActual() <= meta.getValorObjetivo();
                 logger.info("Meta de reducción - ¿Completada? {} (valorActual {} <= valorObjetivo {})",
                         metaCompletada, meta.getValorActual(), meta.getValorObjetivo());
             } else {
                 // Meta de incremento (mayor es mejor)
-                // Completada si el valor actual es mayor o igual al objetivo
                 metaCompletada = meta.getValorActual() >= meta.getValorObjetivo();
                 logger.info("Meta de incremento - ¿Completada? {} (valorActual {} >= valorObjetivo {})",
                         metaCompletada, meta.getValorActual(), meta.getValorObjetivo());
@@ -958,37 +1027,16 @@ public class MetaServiceImp implements MetaService {
             logger.warn("Meta ID {}: No se puede evaluar el estado porque falta valorActual o valorObjetivo", meta.getId());
         }
 
-        // Asignar estado según las condiciones
-        String estadoAnterior = meta.getEstado();
-
-        // CORRECCIÓN: Para transporte, aplicar reglas específicas con valores de la KPI
-        if ("transporte".equals(meta.getTipo())) {
-            // Si el valor es cercano al valor inicial, y es una meta de reducción,
-            // no debería estar completada aún
-            if (esReduccion && meta.getValorInicial() != null && 
-                Math.abs(meta.getValorActual() - meta.getValorInicial()) < meta.getValorInicial() * 0.1) {
-                metaCompletada = false;
-                logger.info("Meta de transporte: Valor actual cercano al inicial, no se considera completada");
-            }
-            
-            // Asegurarnos de que sea "en_progreso" si está dentro del plazo
-            if (!fechaVencida && !metaCompletada) {
-                meta.setEstado("en_progreso");
-                logger.info("Meta de transporte: Estableciendo estado a 'en_progreso'");
-            } else if (metaCompletada) {
-                meta.setEstado("completada");
-            } else if (fechaVencida) {
-                meta.setEstado("fallida");
-            }
+        // Determinar el estado final de la meta
+        if (metaCompletada) {
+            meta.setEstado("completada");
+            logger.info("Meta ID {}: Estableciendo estado a 'completada'", meta.getId());
+        } else if (fechaVencida) {
+            meta.setEstado("fallida");
+            logger.info("Meta ID {}: Estableciendo estado a 'fallida' (fecha vencida)", meta.getId());
         } else {
-            // Comportamiento normal para otros tipos
-            if (metaCompletada) {
-                meta.setEstado("completada");
-            } else if (fechaVencida) {
-                meta.setEstado("fallida");
-            } else {
-                meta.setEstado("en_progreso");
-            }
+            meta.setEstado("en_progreso");
+            logger.info("Meta ID {}: Estableciendo estado a 'en_progreso'", meta.getId());
         }
 
         // Información sobre el cambio de estado
@@ -1086,7 +1134,14 @@ public class MetaServiceImp implements MetaService {
                 .mapToDouble(Transport::getKilometers)
                 .sum();
 
-        double costoPorKm = 4.0; // MXN por km
+        // Calcular el costo promedio por kilómetro basado en datos históricos
+        double costoPorKm = transportes.stream()
+                .filter(t -> t.getCost() > 0 && t.getKilometers() > 0)
+                .mapToDouble(t -> t.getCost() / t.getKilometers())
+                .average()
+                .orElse(0.1); // Usar un valor mínimo si no hay datos históricos
+
+        logger.info("Costo promedio por kilómetro calculado: {} MXN/km", costoPorKm);
 
         return kmSostenible * costoPorKm;
     }

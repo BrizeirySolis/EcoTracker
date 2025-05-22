@@ -119,6 +119,44 @@ export function calcularPorcentajeMeta(meta: Meta): number {
   console.log(`valorInicial=${meta.valorInicial}, valorActual=${meta.valorActual}, valorObjetivo=${meta.valorObjetivo}`);
   console.log(`¿Es reducción? ${esReduccion}`);
 
+  // NUEVO ENFOQUE PARA METAS DE TRANSPORTE
+  if (meta.tipo === 'transporte') {
+    if (esReduccion) {
+      // Para metas de reducción en transporte, valorActual representa la reducción lograda
+      // y valorObjetivo es la reducción objetivo (valorInicial - objetivo)
+      const reduccionObjetivo = meta.valorInicial ? (meta.valorInicial - meta.valorObjetivo) : meta.valorObjetivo;
+      
+      // Si la reducción lograda es negativa (se ha consumido más), el progreso es 0%
+      if (meta.valorActual < 0) {
+        return 0;
+      }
+      
+      // Si la reducción lograda supera el objetivo, el progreso es 100%
+      if (meta.valorActual >= reduccionObjetivo) {
+        return 100;
+      }
+      
+      // Calcular porcentaje de reducción lograda vs objetivo
+      return Math.min(100, Math.max(0, (meta.valorActual / reduccionObjetivo) * 100));
+    } else {
+      // Para metas de incremento en transporte
+      if (meta.valorObjetivo <= 0) return 0;
+      
+      // Si no hay valor inicial o es muy pequeño, calcular simplemente
+      if (!meta.valorInicial || meta.valorInicial <= 0.1) {
+        return Math.min(100, Math.max(0, (meta.valorActual / meta.valorObjetivo) * 100));
+      }
+      
+      // Si hay valor inicial, calcular el progreso desde el inicial hacia el objetivo
+      const incrementoObjetivo = meta.valorObjetivo - meta.valorInicial;
+      const incrementoActual = meta.valorActual - meta.valorInicial;
+      
+      if (incrementoObjetivo <= 0) return 0;
+      
+      return Math.min(100, Math.max(0, (incrementoActual / incrementoObjetivo) * 100));
+    }
+  }
+
   // Para metas donde el valor inicial es demasiado pequeño, usamos una lógica simplificada
   if (!meta.valorInicial || meta.valorInicial <= 0.1) {
     if (esReduccion) {
@@ -166,7 +204,6 @@ export function calcularPorcentajeMeta(meta: Meta): number {
     return Math.min(100, Math.max(0, porcentaje));
   }
 }
-
 
 /**
  * Determina si una meta es de reducción basándose en su tipo y valores
