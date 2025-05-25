@@ -723,3 +723,274 @@ button {
     height: 60px; /* Reducir altura en móviles */
   }
 }
+
+/* Estilos específicos para artículos educativos de agua */
+
+/* Contenedor principal del artículo */
+.article-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* Imágenes principales del artículo */
+.article-image-main {
+  width: 100%;
+  max-width: 600px;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin: 20px auto;
+  display: block;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.article-image {
+  width: 100%;
+  max-width: 400px;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin: 16px auto;
+  display: block;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Cajas de consejos y destacados */
+.tip-box {
+  background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+  border-left: 4px solid var(--color-agua-primary, #0288D1);
+  padding: 16px;
+  margin: 20px 0;
+  border-radius: 0 8px 8px 0;
+}
+
+.tip-box h4 {
+  color: var(--color-agua-dark, #01579B);
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+}
+
+.action-box {
+  background: linear-gradient(135deg, #C8E6C9, #A5D6A7);
+  border-left: 4px solid var(--color-transporte-primary, #43A047);
+  padding: 16px;
+  margin: 20px 0;
+  border-radius: 0 8px 8px 0;
+}
+
+.action-box h4 {
+  color: var(--color-transporte-dark, #2E7D32);
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+}
+
+.alert-box {
+  background: linear-gradient(135deg, #FFEBEE, #FFCDD2);
+  border-left: 4px solid #F44336;
+  padding: 16px;
+  margin: 20px 0;
+  border-radius: 0 8px 8px 0;
+}
+
+.alert-box h4 {
+  color: #C62828;
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+}
+
+.warning-box {
+  background: linear-gradient(135deg, #FFF8E1, #FFECB3);
+  border-left: 4px solid #FFC107;
+  padding: 16px;
+  margin: 20px 0;
+  border-radius: 0 8px 8px 0;
+}
+
+.warning-box h4 {
+  color: #F57C00;
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+}
+
+/* Grids y layouts específicos */
+.habit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.habit-item {
+  background: rgba(2, 136, 209, 0.05);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(2, 136, 209, 0.2);
+}
+
+.savings {
+  color: var(--color-transporte-primary, #43A047);
+  font-weight: 600;
+}
+
+.inspection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.zone {
+  background: rgba(2, 136, 209, 0.08);
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+/* Calculadoras de impacto */
+.impact-calculator {
+  background: linear-gradient(135deg, #F3E5F5, #E1BEE7);
+  padding: 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+.impact-calculator p {
+  margin: 8px 0;
+  font-size: 1rem;
+}
+
+.impact-calculator .total {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-transporte-dark, #2E7D32);
+  border-top: 2px solid #9C27B0;
+  padding-top: 8px;
+  margin-top: 12px;
+}
+
+.savings-table {
+  background: rgba(67, 160, 71, 0.08);
+  padding: 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+.savings-table p {
+  margin: 8px 0;
+  font-size: 1rem;
+  color: var(--color-transporte-dark, #2E7D32);
+}
+
+/* Typography específica para artículos */
+.article-content h3 {
+  color: var(--color-agua-dark, #01579B);
+  font-size: 1.4rem;
+  margin: 24px 0 12px 0;
+  border-bottom: 2px solid var(--color-agua-light, #B3E5FC);
+  padding-bottom: 8px;
+}
+
+.article-content h4 {
+  color: var(--color-agua-primary, #0288D1);
+  font-size: 1.2rem;
+  margin: 16px 0 8px 0;
+}
+
+.article-content ul {
+  margin: 12px 0;
+  padding-left: 20px;
+}
+
+.article-content li {
+  margin: 6px 0;
+  line-height: 1.5;
+}
+
+.article-content strong {
+  color: var(--color-agua-dark, #01579B);
+  font-weight: 600;
+}
+
+/* Estilos responsive para artículos */
+@media (max-width: 768px) {
+  .article-content {
+    padding: 16px;
+  }
+
+  .article-image-main {
+    height: 200px;
+  }
+
+  .article-image {
+    height: 150px;
+  }
+
+  .habit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .inspection-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tip-box, .action-box, .alert-box, .warning-box {
+    padding: 12px;
+    margin: 16px 0;
+  }
+
+  .article-content h3 {
+    font-size: 1.2rem;
+  }
+
+  .article-content h4 {
+    font-size: 1.1rem;
+  }
+}
+
+/* Animaciones sutiles */
+.tip-box, .action-box, .alert-box, .warning-box {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tip-box:hover, .action-box:hover, .alert-box:hover, .warning-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Indicadores visuales para listas */
+.article-content li::marker {
+  color: var(--color-agua-primary, #0288D1);
+}
+
+/* Estilos para ordenar listas numeradas */
+.article-content ol {
+  counter-reset: step-counter;
+  padding-left: 0;
+}
+
+.article-content ol li {
+  counter-increment: step-counter;
+  padding-left: 40px;
+  position: relative;
+  margin: 12px 0;
+}
+
+.article-content ol li::before {
+  content: counter(step-counter);
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: var(--color-agua-primary, #0288D1);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
