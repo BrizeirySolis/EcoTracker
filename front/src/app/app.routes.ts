@@ -94,8 +94,70 @@ export const routes: Routes = [
     loadComponent: () => import('./components/metas/meta-detail/meta-detail.component').then(m => m.MetaDetailComponent),
     canActivate: [AuthGuard]
   },
+
+  // ========================================
+  // RUTAS DEL MÓDULO DE EDUCACIÓN
+  // ========================================
+
+  // Página principal del módulo educativo
+  {
+    path: 'educacion',
+    loadComponent: () => import('./components/education/education-home/education-home.component')
+      .then(m => m.EducationHomeComponent),
+    canActivate: [AuthGuard],
+    data: {
+      title: 'Centro Educativo',
+      description: 'Aprende técnicas para reducir tu impacto ambiental'
+    }
+  },
+
+  // IMPORTANTE: Rutas específicas por categoría para mejor SEO (DEBEN IR ANTES de las rutas generales)
+  {
+    path: 'educacion/agua',
+    redirectTo: 'educacion/categoria/agua',
+    pathMatch: 'full'
+  },
+  {
+    path: 'educacion/electricidad',
+    redirectTo: 'educacion/categoria/electricidad',
+    pathMatch: 'full'
+  },
+  {
+    path: 'educacion/transporte',
+    redirectTo: 'educacion/categoria/transporte',
+    pathMatch: 'full'
+  },
+
+  // Vista para categorías específicas (DEBE IR ANTES que la ruta de artículos)
+  {
+    path: 'educacion/categoria/:categoria',
+    loadComponent: () => import('./components/education/category-view/category-view.component')
+      .then(m => m.CategoryViewComponent),
+    canActivate: [AuthGuard],
+    data: {
+      title: 'Categoría Educativa',
+      description: 'Artículos de una categoría específica'
+    }
+  },
+
+  // Visualizador de artículos específicos (DEBE IR DESPUÉS de la ruta de categorías)
+  {
+    path: 'educacion/:tipo/:slug',
+    loadComponent: () => import('./components/education/article-viewer/article-viewer.component')
+      .then(m => m.ArticleViewerComponent),
+    canActivate: [AuthGuard],
+    data: {
+      title: 'Artículo Educativo',
+      description: 'Contenido educativo sobre sostenibilidad'
+    }
+  },
+
+  // ========================================
+  // FIN RUTAS DEL MÓDULO DE EDUCACIÓN
+  // ========================================
+
   {
     path: '**',
     redirectTo: '/home'
   }
-]
+];

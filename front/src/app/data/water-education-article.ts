@@ -10,7 +10,7 @@ export const waterEducationArticles: EducationArticle[] = [
     summary: 'Descubre los dispositivos simples y económicos que pueden reducir tu consumo de agua hasta un 50% sin sacrificar comodidad.',
     content: `
       <div class="article-content">
-        <img src="/assets/education/agua/dispositivos-ahorradores.jpg" alt="Dispositivos ahorradores de agua instalados en grifos y duchas" class="article-image-main">
+        <img src="https://lh6.googleusercontent.com/proxy/PDCseVBgGIbeXnCVNKrk3kM0wBr5UJewYBGBmAKgQR05We1K3YaPPoqjLgfKZLyYZFQ88_iW7gliX8PQm5wOR0LvGtPx" alt="Dispositivos ahorradores de agua instalados en grifos y duchas" class="article-image-main">
 
         <h3>🚿 Aireadores para Grifos y Duchas</h3>
         <p>Los aireadores son pequeños dispositivos que se instalan en grifos y regaderas. <strong>Reducen el flujo de agua hasta un 50%</strong> mezclándola con aire, manteniendo la presión y sensación de abundante agua.</p>
@@ -21,7 +21,7 @@ export const waterEducationArticles: EducationArticle[] = [
         </div>
 
         <h3>🚽 Dispositivos para Inodoros</h3>
-        <img src="/assets/education/agua/inodoro-dual.jpg" alt="Inodoro con sistema de descarga dual" class="article-image">
+        <img src="https://www.mndelgolfo.com/blog/wp-content/uploads/2017/10/como-funciona-un-inodoro-doble-descarga.jpg" alt="Inodoro con sistema de descarga dual" class="article-image">
         <p>Las <strong>válvulas de descarga dual</strong> permiten elegir entre descarga completa (6L) o parcial (3L). Los <strong>tanques con bolsas de agua</strong> reducen la capacidad del depósito sin afectar la funcionalidad.</p>
 
         <h3>📊 Impacto Real</h3>
@@ -38,7 +38,7 @@ export const waterEducationArticles: EducationArticle[] = [
       </div>
     `,
     category: 'agua',
-    imageUrl: '/assets/education/agua/dispositivos-ahorradores-thumbnail.jpg',
+    imageUrl: 'https://propiedades.com/blog/wp-content/uploads/2022/07/co--mo-ahorrar-agua-2.jpg',
     readingTime: 1,
     tags: ['dispositivos', 'ahorro', 'tecnología', 'instalación'],
     publishDate: new Date('2025-01-15'),
@@ -52,7 +52,7 @@ export const waterEducationArticles: EducationArticle[] = [
     summary: 'Transforma tu rutina diaria con hábitos simples que pueden reducir tu consumo de agua hasta un 30% de forma inmediata.',
     content: `
       <div class="article-content">
-        <img src="/assets/education/agua/habitos-conscientes.jpg" alt="Familia practicando hábitos de ahorro de agua en el hogar" class="article-image-main">
+        <img src="https://askthescientists.com/wp-content/uploads/2019/09/Child-washing-hands-AdobeStock_152403075.jpg" alt="Familia practicando hábitos de ahorro de agua en el hogar" class="article-image-main">
 
         <h3>🚿 En el Baño (60% del consumo doméstico)</h3>
         <div class="habit-grid">
@@ -64,7 +64,7 @@ export const waterEducationArticles: EducationArticle[] = [
           </div>
         </div>
 
-        <img src="/assets/education/agua/cocina-consciente.jpg" alt="Prácticas de ahorro de agua en la cocina" class="article-image">
+        <img src="https://suinbasa.com/wp-content/uploads/2016/07/water-kitchen-black-design.jpg" alt="Prácticas de ahorro de agua en la cocina" class="article-image">
 
         <h3>🍽️ En la Cocina (15% del consumo)</h3>
         <ul>
@@ -94,7 +94,7 @@ export const waterEducationArticles: EducationArticle[] = [
       </div>
     `,
     category: 'agua',
-    imageUrl: '/assets/education/agua/habitos-conscientes-thumbnail.jpg',
+    imageUrl: 'https://care.org.pe/wp-content/uploads/2021/03/Portada_WEB-3.png',
     readingTime: 1,
     tags: ['hábitos', 'rutina', 'ahorro diario', 'familia'],
     publishDate: new Date('2025-01-10'),
@@ -108,7 +108,7 @@ export const waterEducationArticles: EducationArticle[] = [
     summary: 'Una fuga pequeña puede desperdiciar hasta 34,000 litros al año. Aprende a detectarlas y repararlas tú mismo.',
     content: `
       <div class="article-content">
-        <img src="/assets/education/agua/deteccion-fugas.jpg" alt="Técnico revisando medidor de agua para detectar fugas" class="article-image-main">
+        <img src="https://es.statefarm.com/content/dam/sf-library/en-us/secure/legacy/simple-insights/136-home-plumbing-checkup-wide.jpg" alt="Técnico revisando medidor de agua para detectar fugas" class="article-image-main">
 
         <div class="alert-box">
           <h4>⚠️ Dato Impactante</h4>
@@ -118,7 +118,7 @@ export const waterEducationArticles: EducationArticle[] = [
         <h3>🔍 Detección Rápida en 5 Minutos</h3>
 
         <h4>1. Test del Medidor</h4>
-        <img src="/assets/education/agua/medidor-agua.jpg" alt="Lectura de medidor de agua para detectar fugas" class="article-image">
+        <img src="https://i.ytimg.com/vi/LBOiyVYb-hc/hq720.jpg?sqp=-oaymwE7CK4FEIIDSFryq4qpAy0IARUAAAAAGAElAADIQj0AgKJD8AEB-AHUBoAC4AOKAgwIABABGF0gXShdMA8=&rs=AOn4CLDiRFHvvaBzaMhL29H9JMkxkiVOHQ" alt="Lectura de medidor de agua para detectar fugas" class="article-image">
         <ol>
           <li>Cierra todas las llaves de agua en casa</li>
           <li>Revisa tu medidor: si se mueve, ¡hay fuga!</li>
@@ -139,7 +139,7 @@ export const waterEducationArticles: EducationArticle[] = [
           </div>
         </div>
 
-        <img src="/assets/education/agua/reparacion-fuga.jpg" alt="Herramientas básicas para reparar fugas menores" class="article-image">
+        <img src="https://rotoplas.com.mx/wp-content/uploads/2020/04/black-and-white-close-up-equipment-210881.jpg" alt="Herramientas básicas para reparar fugas menores" class="article-image">
 
         <h3>🔧 Reparaciones Básicas</h3>
 
@@ -179,7 +179,7 @@ export const waterEducationArticles: EducationArticle[] = [
       </div>
     `,
     category: 'agua',
-    imageUrl: '/assets/education/agua/deteccion-fugas-thumbnail.jpg',
+    imageUrl: 'https://grupohidraulica.com/wp-content/uploads/2023/07/fuga-de-agua-tuberias-1024x683-1.jpg',
     readingTime: 1,
     tags: ['detección', 'reparación', 'mantenimiento', 'DIY'],
     publishDate: new Date('2025-01-05'),

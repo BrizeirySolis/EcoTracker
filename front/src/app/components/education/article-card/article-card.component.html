@@ -1,0 +1,107 @@
+<!-- front/src/app/components/education/article-card/article-card.component.html -->
+
+<article
+  [class]="getCardClasses()"
+  (click)="onArticleClick()"
+  (keydown)="onKeyDown($event)"
+  [attr.tabindex]="0"
+  [attr.role]="'button'"
+  [attr.aria-label]="'Leer artículo: ' + article?.title"
+>
+  <!-- Indicador de artículo destacado -->
+  <div *ngIf="featured" class="featured-badge">
+    <span class="featured-icon">⭐</span>
+    <span class="featured-text">Destacado</span>
+  </div>
+
+  <!-- Imagen del artículo -->
+  <div class="article-image-container">
+    <img
+      [src]="getArticleImage()"
+      [alt]="article?.title || 'Imagen del artículo'"
+      class="article-image"
+      (error)="onImageError($event)"
+      loading="lazy"
+    >
+
+    <!-- Overlay con categoría -->
+    <div *ngIf="showCategory" class="category-overlay">
+      <div class="category-badge">
+        <span class="category-icon">{{ getCategoryIcon() }}</span>
+        <span class="category-name">{{ getCategoryName() }}</span>
+      </div>
+    </div>
+
+    <!-- Tiempo de lectura en la imagen -->
+    <div *ngIf="showReadingTime" class="reading-time-overlay">
+      <span class="reading-time-icon">🕒</span>
+      <span class="reading-time-text">{{ getReadingTimeText() }}</span>
+    </div>
+  </div>
+
+  <!-- Contenido de la tarjeta -->
+  <div class="article-content">
+
+    <!-- Header con metadatos -->
+    <div class="article-header">
+
+      <!-- Fecha de publicación -->
+      <div *ngIf="showPublishDate" class="publish-date">
+        <span class="date-icon">📅</span>
+        <span class="date-text">{{ getFormattedDate() }}</span>
+      </div>
+
+      <!-- Categoría (cuando no se muestra en overlay) -->
+      <div *ngIf="showCategory && compact" class="category-inline">
+        <span class="category-dot" [style.background-color]="getCategoryColor()"></span>
+        <span class="category-text">{{ getCategoryName() }}</span>
+      </div>
+    </div>
+
+    <!-- Título del artículo -->
+    <h3 class="article-title">
+      {{ article?.title }}
+    </h3>
+
+    <!-- Resumen del artículo -->
+    <p *ngIf="showSummary" class="article-summary">
+      {{ getTruncatedSummary(compact ? 80 : 120) }}
+    </p>
+
+    <!-- Tags del artículo -->
+    <div *ngIf="showTags && hasTags()" class="article-tags">
+      <span
+        *ngFor="let tag of getLimitedTags(compact ? 2 : 3)"
+        class="tag"
+      >
+        #{{ tag }}
+      </span>
+      <span
+        *ngIf="article.tags.length > (compact ? 2 : 3)"
+        class="tag-more"
+      >
+        +{{ article.tags.length - (compact ? 2 : 3) }} más
+      </span>
+    </div>
+
+    <!-- Footer de la tarjeta -->
+    <div class="article-footer">
+
+      <!-- Información de lectura -->
+      <div class="reading-info">
+        <span *ngIf="showReadingTime && compact" class="reading-time-compact">
+          🕒 {{ getReadingTimeText() }}
+        </span>
+      </div>
+
+      <!-- Indicador de acción -->
+      <div class="action-indicator">
+        <span class="action-text">Leer más</span>
+        <span class="action-arrow">→</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Indicador de hover/focus -->
+  <div class="hover-indicator"></div>
+</article>

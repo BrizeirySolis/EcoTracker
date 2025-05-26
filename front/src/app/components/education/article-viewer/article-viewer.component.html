@@ -1,0 +1,252 @@
+<!-- front/src/app/components/education/article-viewer/article-viewer.component.html -->
+
+<div class="article-viewer" [class]="getThemeClasses()">
+
+  <!-- Barra de progreso de lectura -->
+  <div class="reading-progress-bar" [style.width.%]="getReadingProgress()"></div>
+
+  <!-- Estados de carga y error -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Cargando artículo...</p>
+  </div>
+
+  <div *ngIf="error && !isLoading" class="error-container">
+    <div class="error-icon">⚠️</div>
+    <h2>Error al cargar el artículo</h2>
+    <p>{{ error }}</p>
+    <div class="error-actions">
+      <button (click)="refresh()" class="btn-retry">Reintentar</button>
+      <button (click)="goBackToHome()" class="btn-home">Ir al inicio</button>
+    </div>
+  </div>
+
+  <!-- Contenido del artículo -->
+  <article *ngIf="currentArticle && !isLoading && !error" class="article-container">
+
+    <!-- Breadcrumbs de navegación -->
+    <nav class="breadcrumbs" aria-label="Navegación">
+      <ol class="breadcrumb-list">
+        <li class="breadcrumb-item">
+          <a (click)="goBackToHome()" class="breadcrumb-link">
+            🏠 Educación
+          </a>
+        </li>
+        <li class="breadcrumb-separator">→</li>
+        <li class="breadcrumb-item">
+          <a (click)="goBackToCategory()" class="breadcrumb-link">
+            {{ getCategoryIcon() }} {{ categoryInfo?.name }}
+          </a>
+        </li>
+        <li class="breadcrumb-separator">→</li>
+        <li class="breadcrumb-item current" aria-current="page">
+          {{ currentArticle.title }}
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Header del artículo -->
+    <header class="article-header">
+
+      <!-- Metadatos del artículo -->
+      <div class="article-meta">
+        <div class="category-badge">
+          <span class="category-icon">{{ getCategoryIcon() }}</span>
+          <span class="category-name">{{ categoryInfo?.name }}</span>
+        </div>
+
+        <div class="article-stats">
+          <span class="reading-time">
+            🕒 {{ getReadingTimeText() }}
+          </span>
+          <span class="publish-date">
+            📅 {{ getFormattedPublishDate() }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Título del artículo -->
+      <h1 class="article-title">{{ currentArticle.title }}</h1>
+
+      <!-- Resumen del artículo -->
+      <div class="article-summary">
+        <p>{{ currentArticle.summary }}</p>
+      </div>
+
+      <!-- Tags del artículo -->
+      <div class="article-tags" *ngIf="currentArticle.tags && currentArticle.tags.length > 0">
+        <span
+          *ngFor="let tag of currentArticle.tags"
+          class="tag"
+        >
+          #{{ tag }}
+        </span>
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="article-actions">
+        <div class="share-buttons">
+          <span class="share-label">Compartir:</span>
+          <button
+            (click)="shareArticle('twitter')"
+            class="share-btn twitter"
+            aria-label="Compartir en Twitter"
+          >
+            🐦
+          </button>
+          <button
+            (click)="shareArticle('facebook')"
+            class="share-btn facebook"
+            aria-label="Compartir en Facebook"
+          >
+            📘
+          </button>
+          <button
+            (click)="shareArticle('linkedin')"
+            class="share-btn linkedin"
+            aria-label="Compartir en LinkedIn"
+          >
+            💼
+          </button>
+          <button
+            (click)="shareArticle('whatsapp')"
+            class="share-btn whatsapp"
+            aria-label="Compartir en WhatsApp"
+          >
+            💬
+          </button>
+          <button
+            (click)="shareArticle('copy')"
+            class="share-btn copy"
+            aria-label="Copiar enlace"
+          >
+            🔗
+          </button>
+        </div>
+
+        <div class="reading-progress">
+          <span class="progress-label">Progreso:</span>
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              [style.width.%]="getReadingProgress()"
+            ></div>
+          </div>
+          <span class="progress-text">{{ getReadingProgress() }}%</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Contenido principal del artículo -->
+    <main class="article-content">
+      <div
+        class="content-html"
+        [innerHTML]="sanitizedContent"
+      ></div>
+    </main>
+
+    <!-- Footer del artículo -->
+    <footer class="article-footer">
+
+      <!-- Información adicional -->
+      <div class="article-info">
+        <div class="completion-status" *ngIf="readingStats.completed">
+          <span class="completion-icon">✅</span>
+          <span class="completion-text">¡Artículo completado!</span>
+        </div>
+
+        <div class="reading-time-spent" *ngIf="readingStats.timeSpent > 0">
+          <span class="time-icon">⏱️</span>
+          <span class="time-text">
+            Tiempo de lectura: {{ readingStats.timeSpent }} segundos
+          </span>
+        </div>
+      </div>
+
+      <!-- Navegación entre artículos -->
+      <nav class="article-navigation" *ngIf="navigation">
+        <div class="nav-controls">
+
+          <!-- Artículo anterior -->
+          <button
+            *ngIf="navigation.previous"
+            (click)="goToPreviousArticle()"
+            class="nav-btn prev-btn"
+          >
+            <span class="nav-icon">←</span>
+            <div class="nav-content">
+              <span class="nav-label">Anterior</span>
+              <span class="nav-title">{{ navigation.previous.title }}</span>
+            </div>
+          </button>
+
+          <!-- Botón de regreso a categoría -->
+          <button
+            (click)="goBackToCategory()"
+            class="nav-btn category-btn"
+          >
+            <span class="nav-icon">{{ getCategoryIcon() }}</span>
+            <div class="nav-content">
+              <span class="nav-label">Ver todos</span>
+              <span class="nav-title">{{ categoryInfo?.name }}</span>
+            </div>
+          </button>
+
+          <!-- Artículo siguiente -->
+          <button
+            *ngIf="navigation.next"
+            (click)="goToNextArticle()"
+            class="nav-btn next-btn"
+          >
+            <div class="nav-content">
+              <span class="nav-label">Siguiente</span>
+              <span class="nav-title">{{ navigation.next.title }}</span>
+            </div>
+            <span class="nav-icon">→</span>
+          </button>
+        </div>
+      </nav>
+    </footer>
+
+    <!-- Artículos relacionados -->
+    <section
+      *ngIf="hasRelatedArticles()"
+      class="related-articles"
+    >
+      <h2 class="related-title">Artículos Relacionados</h2>
+      <div class="related-grid">
+        <app-article-card
+          *ngFor="let relatedArticle of navigation!.relatedArticles"
+          [article]="relatedArticle"
+          [showCategory]="false"
+          [compact]="true"
+          (articleClick)="navigateToArticle($event)"
+        ></app-article-card>
+      </div>
+    </section>
+
+    <!-- Call to action final -->
+    <section class="article-cta">
+      <div class="cta-content">
+        <h3 class="cta-title">¿Te gustó este artículo?</h3>
+        <p class="cta-description">
+          Descubre más contenido educativo para mejorar tu impacto ambiental
+        </p>
+        <div class="cta-buttons">
+          <button
+            (click)="goBackToCategory()"
+            class="cta-btn primary"
+          >
+            Ver más de {{ categoryInfo?.name }}
+          </button>
+          <button
+            (click)="goBackToHome()"
+            class="cta-btn secondary"
+          >
+            Explorar todas las categorías
+          </button>
+        </div>
+      </div>
+    </section>
+  </article>
+</div>

@@ -1,0 +1,201 @@
+<!-- front/src/app/components/education/category-view/category-view.component.html -->
+
+<div class="category-view" [class]="getThemeClasses()">
+
+  <!-- Estados de carga y error -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Cargando artículos...</p>
+  </div>
+
+  <div *ngIf="error && !isLoading" class="error-container">
+    <div class="error-icon">⚠️</div>
+    <h2>Error al cargar la categoría</h2>
+    <p>{{ error }}</p>
+    <div class="error-actions">
+      <button (click)="refresh()" class="btn-retry">Reintentar</button>
+      <button (click)="goBackToHome()" class="btn-home">Ir al inicio</button>
+    </div>
+  </div>
+
+  <!-- Contenido de la categoría -->
+  <div *ngIf="categoryInfo && !isLoading && !error" class="category-container">
+
+    <!-- Header de la categoría -->
+    <header class="category-header">
+      <div class="container">
+
+        <!-- Breadcrumbs -->
+        <nav class="breadcrumbs" aria-label="Navegación">
+          <ol class="breadcrumb-list">
+            <li class="breadcrumb-item">
+              <a (click)="goBackToHome()" class="breadcrumb-link">
+                🏠 Educación
+              </a>
+            </li>
+            <li class="breadcrumb-separator">→</li>
+            <li class="breadcrumb-item current" aria-current="page">
+              {{ getCategoryIcon() }} {{ categoryInfo.name }}
+            </li>
+          </ol>
+        </nav>
+
+        <!-- Información de la categoría -->
+        <div class="category-info">
+          <div class="category-icon-large">
+            {{ getCategoryIcon() }}
+          </div>
+          <div class="category-details">
+            <h1 class="category-title">{{ categoryInfo.name }}</h1>
+            <p class="category-description">{{ categoryInfo.description }}</p>
+
+            <!-- Estadísticas de la categoría -->
+            <div class="category-stats">
+              <div class="stat-item">
+                <span class="stat-number">{{ getCategoryStats().total }}</span>
+                <span class="stat-label">Artículos</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number">{{ getCategoryStats().featured }}</span>
+                <span class="stat-label">Destacados</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number">{{ getCategoryStats().avgReadingTime }}</span>
+                <span class="stat-label">Min promedio</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main class="category-content">
+      <div class="container">
+
+        <!-- Barra de búsqueda y filtros -->
+        <section class="search-section">
+          <div class="search-bar">
+            <div class="search-input-container">
+              <input
+                type="text"
+                [(ngModel)]="searchQuery"
+                (input)="filterArticles()"
+                placeholder="Buscar en {{ categoryInfo.name }}..."
+                class="search-input"
+              >
+              <button
+                *ngIf="searchQuery"
+                (click)="clearSearch()"
+                class="clear-search-btn"
+                aria-label="Limpiar búsqueda"
+              >
+                ✕
+              </button>
+            </div>
+
+            <!-- Filtros de ordenamiento -->
+            <div class="sort-controls">
+              <label class="sort-label">Ordenar por:</label>
+              <select (change)="sortArticles($any($event.target).value)" class="sort-select">
+                <option value="date">Fecha de publicación</option>
+                <option value="title">Título A-Z</option>
+                <option value="reading-time">Tiempo de lectura</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tags de la categoría -->
+          <div class="tags-section" *ngIf="getCategoryTags().length > 0">
+            <span class="tags-label">Temas:</span>
+            <div class="tags-container">
+              <button
+                *ngFor="let tag of getCategoryTags()"
+                (click)="filterByTag(tag)"
+                class="tag-btn"
+                [class.active]="searchQuery === tag"
+              >
+                #{{ tag }}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Artículos destacados -->
+        <section *ngIf="featuredArticles.length > 0 && !searchQuery" class="featured-section">
+          <h2 class="section-title">
+            <span class="title-icon">⭐</span>
+            Artículos Destacados de {{ categoryInfo.name }}
+          </h2>
+          <div class="featured-grid">
+            <app-article-card
+              *ngFor="let article of featuredArticles"
+              [article]="article"
+              [showCategory]="false"
+              [featured]="true"
+              (articleClick)="navigateToArticle($event)"
+              class="featured-article"
+            ></app-article-card>
+          </div>
+        </section>
+
+        <!-- Todos los artículos -->
+        <section class="articles-section">
+          <h2 class="section-title">
+            <span class="title-icon">📚</span>
+            Todos los Artículos
+            <span class="results-count" *ngIf="searchQuery">
+              ({{ filteredArticles.length }} resultado{{ filteredArticles.length !== 1 ? 's' : '' }})
+            </span>
+          </h2>
+
+          <!-- Sin resultados -->
+          <div *ngIf="filteredArticles.length === 0" class="no-results">
+            <div class="no-results-icon">🔍</div>
+            <h3>No se encontraron artículos</h3>
+            <p *ngIf="searchQuery">
+              No hay artículos que coincidan con "<strong>{{ searchQuery }}</strong>"
+            </p>
+            <p *ngIf="!searchQuery">
+              No hay artículos disponibles en esta categoría.
+            </p>
+            <button *ngIf="searchQuery" (click)="clearSearch()" class="btn-clear-search">
+              Limpiar búsqueda
+            </button>
+          </div>
+
+          <!-- Grid de artículos -->
+          <div *ngIf="filteredArticles.length > 0" class="articles-grid">
+            <app-article-card
+              *ngFor="let article of filteredArticles"
+              [article]="article"
+              [showCategory]="false"
+              [showPublishDate]="true"
+              [showTags]="true"
+              (articleClick)="navigateToArticle($event)"
+              [class]="getThemeClasses()"
+            ></app-article-card>
+          </div>
+        </section>
+
+        <!-- Call to action -->
+        <section class="category-cta">
+          <div class="cta-card">
+            <h3 class="cta-title">¿Listo para Actuar?</h3>
+            <p class="cta-description">
+              Aplica lo que has aprendido sobre {{ categoryInfo.name }} y comienza a generar un impacto positivo.
+            </p>
+            <div class="cta-buttons">
+              <button (click)="goBackToHome()" class="cta-btn secondary">
+                Explorar Otras Categorías
+              </button>
+              <a routerLink="/dashboard" class="cta-btn primary">
+                Ver Mi Progreso
+              </a>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
