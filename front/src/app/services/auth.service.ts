@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { User, LoginRequest, SignupRequest, AuthResponse } from '../models/auth.model';
+import { User, LoginRequest, SignupRequest, AuthResponse, UserScore } from '../models/auth.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -77,6 +77,7 @@ export class AuthService {
             username: response.username,
             email: response.email,
             name: response.name || response.username,
+            puntuacion: 0, // Inicializar puntuación en 0
             roles: response.roles,
             token: token
           };
@@ -113,5 +114,32 @@ export class AuthService {
       observer.next(null);
       observer.complete();
     });
+  }
+
+  /**
+   * Obtener la puntuación actual del usuario
+   */
+  getUserScore(): Observable<UserScore> {
+    return this.http.get<UserScore>(`${this.API_URL}/user/score`);
+  }
+
+  /**
+   * Actualizar la puntuación del usuario actual en el estado local
+   */
+  updateUserScore(nuevaPuntuacion: number): void {
+    const currentUser = this.currentUserValue;
+    if (currentUser) {
+      const updatedUser = { ...currentUser, puntuacion: nuevaPuntuacion };
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+      this.currentUserSubject.next(updatedUser);
+    }
+  }
+
+  /**
+   * Obtener la puntuación del usuario actual desde el estado local
+   */
+  getCurrentUserScore(): number {
+    const currentUser = this.currentUserValue;
+    return currentUser?.puntuacion || 0;
   }
 }

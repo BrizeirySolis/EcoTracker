@@ -1,6 +1,6 @@
 // front/src/app/components/metas/meta-list/meta-list.component.ts
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -16,7 +16,7 @@ import {catchError, finalize, of, Subscription} from 'rxjs';
   standalone: true,
   imports: [CommonModule, RouterLink, FormsModule, NavbarComponent]
 })
-export class MetaListComponent implements OnInit {
+export class MetaListComponent implements OnInit, OnDestroy {
   metas: Meta[] = [];
   loading = true;
   error: string | null = null;
@@ -28,14 +28,31 @@ export class MetaListComponent implements OnInit {
   metaToDelete: Meta | null = null;
   deleting = false;
 
-  // Añadir suscripción
+  // Suscripciones
+  private metasSubscription: Subscription | null = null;
   private consumptionSubscription: Subscription | null = null;
 
   constructor(private metaService: MetaService) { }
 
   ngOnInit(): void {
-    // Primero cargar las metas, luego actualizar su progreso
+    // Suscribirse al observable de metas para actualizaciones automáticas
+    this.metasSubscription = this.metaService.metas$
+      .subscribe(metas => {
+        this.metas = metas;
+        this.loading = false;
+      });
+
+    // Cargar las metas inicialmente
     this.loadAndUpdateMetas();
+  }
+
+  ngOnDestroy(): void {
+    if (this.metasSubscription) {
+      this.metasSubscription.unsubscribe();
+    }
+    if (this.consumptionSubscription) {
+      this.consumptionSubscription.unsubscribe();
+    }
   }
 
   /**
@@ -45,13 +62,11 @@ export class MetaListComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    // Primero cargar todas las metas
-    this.metaService.getAllMetas(false, this.selectedTipo)
+    // Cargar metas (esto actualiza automáticamente el observable)
+    this.metaService.getAllMetas(true, this.selectedTipo)
       .subscribe({
         next: (metas) => {
-          // Guardar las metas cargadas
-          this.metas = metas;
-
+          // Las metas se actualizan automáticamente vía el observable
           // Ahora actualizar el progreso de todas las metas
           this.updateAllMetasProgress();
         },
@@ -81,14 +96,7 @@ export class MetaListComponent implements OnInit {
       .subscribe({
         next: (updatedMetas) => {
           console.log('Metas actualizadas automáticamente:', updatedMetas);
-
-          // Actualizar las metas en el array principal
-          updatedMetas.forEach(updatedMeta => {
-            const index = this.metas.findIndex(m => m.id === updatedMeta.id);
-            if (index !== -1) {
-              this.metas[index] = updatedMeta;
-            }
-          });
+          // Las metas se actualizan automáticamente vía el observable
         },
         error: (error) => {
           console.error('Error al actualizar metas:', error);
@@ -126,10 +134,11 @@ export class MetaListComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
+    // Cargar metas (esto actualiza automáticamente el observable)
     this.metaService.getAllMetas(true, this.selectedTipo)
       .subscribe({
         next: (metas) => {
-          this.metas = metas;
+          // Las metas se actualizan automáticamente vía el observable
         },
         error: (error) => {
           this.error = error.message || 'Error al cargar las metas';
@@ -146,12 +155,6 @@ export class MetaListComponent implements OnInit {
   onTipoFilterChange(): void {
     // Usar la nueva función para actualizar y cargar
     this.loadMetasWithRefresh();
-  }
-
-  ngOnDestroy(): void {
-    if (this.consumptionSubscription) {
-      this.consumptionSubscription.unsubscribe();
-    }
   }
 
   /**
@@ -238,7 +241,8 @@ export class MetaListComponent implements OnInit {
       )
       .subscribe({
         next: () => {
-          // El éxito se maneja a través del BehaviorSubject en el servicio
+          // La eliminación se refleja automáticamente vía el observable
+          console.log('Meta eliminada exitosamente');
         },
         error: (error) => {
           this.error = error.message || 'Error al eliminar la meta';

@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models/auth.model';
+import { Subscription, interval } from 'rxjs';
 
 /**
  * Navbar component that provides navigation for the application
@@ -33,6 +34,13 @@ import { User } from '../../models/auth.model';
         </ng-container>
 
         <div *ngIf="isLoggedIn" class="user-menu">
+          <!-- Mostrar puntuación -->
+          <div class="user-score">
+            <span class="score-icon">⭐</span>
+            <span class="score-value">{{ userScore }}</span>
+            <span class="score-label">pts</span>
+          </div>
+          
           <div class="user-info" (click)="toggleUserMenu()">
             <span>{{ currentUser?.name }}</span>
             <span class="dropdown-icon">▼</span>
@@ -109,6 +117,33 @@ import { User } from '../../models/auth.model';
 
     .user-menu {
       position: relative;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .user-score {
+      display: flex;
+      align-items: center;
+      background-color: rgba(255, 255, 255, 0.15);
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-weight: bold;
+      gap: 4px;
+    }
+
+    .score-icon {
+      font-size: 1.2rem;
+    }
+
+    .score-value {
+      font-size: 1.1rem;
+      color: #FFD700;
+    }
+
+    .score-label {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.8);
     }
 
     .user-info {
@@ -176,24 +211,64 @@ import { User } from '../../models/auth.model';
         width: 100%;
         justify-content: flex-end;
       }
+
+      .user-menu {
+        flex-direction: column;
+        gap: 8px;
+      }
     }
   `
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent implements OnInit, OnDestroy {
   isLoggedIn = false;
   currentUser: User | null = null;
   showUserMenu = false;
+  userScore = 0;
+  private subscriptions: Subscription = new Subscription();
 
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
     // Suscribirse a los cambios en el estado de autenticación
-    this.authService.currentUser.subscribe(
-      user => {
-        this.currentUser = user;
-        this.isLoggedIn = !!user;
-      }
+    this.subscriptions.add(
+      this.authService.currentUser.subscribe(
+        user => {
+          this.currentUser = user;
+          this.isLoggedIn = !!user;
+          this.userScore = user?.puntuacion || 0;
+          
+          // Obtener puntuación actualizada del servidor si el usuario está logueado
+          if (user) {
+            this.updateUserScore();
+          }
+        }
+      )
     );
+
+    // Actualizar puntuación cada 30 segundos si el usuario está logueado
+    this.subscriptions.add(
+      interval(30000).subscribe(() => {
+        if (this.isLoggedIn) {
+          this.updateUserScore();
+        }
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+
+  private updateUserScore(): void {
+    this.authService.getUserScore().subscribe({
+      next: (response) => {
+        this.userScore = response.puntuacion;
+        this.authService.updateUserScore(response.puntuacion);
+      },
+      error: (error) => {
+        console.error('Error al obtener puntuación:', error);
+      }
+    });
   }
 
   toggleUserMenu(): void {

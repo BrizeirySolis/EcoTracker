@@ -5,6 +5,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import {Observable, BehaviorSubject, throwError, Subject, forkJoin, of} from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { Meta, MetaCreateRequest } from '../models/meta.model';
+import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -28,11 +29,36 @@ export class MetaService {
   private consumptionUpdatedSource = new Subject<string>();
   public consumptionUpdated$ = this.consumptionUpdatedSource.asObservable();
 
-  constructor(private http: HttpClient) {}
+  // Notificación de meta completada
+  private metaCompletedSource = new Subject<Meta>();
+  public metaCompleted$ = this.metaCompletedSource.asObservable();
+
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {}
 
   // Método para notificar actualizaciones de consumo
   notifyConsumptionUpdated(type: string): void {
     this.consumptionUpdatedSource.next(type);
+  }
+
+  // Método para notificar cuando una meta se completa
+  private notifyMetaCompleted(meta: Meta): void {
+    if (meta.estado === 'completada') {
+      this.metaCompletedSource.next(meta);
+      
+      // Actualizar puntuación del usuario inmediatamente
+      this.authService.getUserScore().subscribe({
+        next: (response) => {
+          this.authService.updateUserScore(response.puntuacion);
+          console.log(`¡Meta completada! Nueva puntuación: ${response.puntuacion}`);
+        },
+        error: (error) => {
+          console.error('Error al actualizar puntuación tras completar meta:', error);
+        }
+      });
+    }
   }
 
   // Método para actualizar múltiples metas (procesa cada una individualmente)
@@ -209,6 +235,9 @@ export class MetaService {
 
         // Invalidate filtered caches
         this.filteredMetasCache = {};
+
+        // Notificar si se completó la meta
+        this.notifyMetaCompleted(updatedMeta);
       }),
       catchError(error => {
         console.error(`Error updating meta progress ${id}:`, error);
@@ -293,9 +322,12 @@ export class MetaService {
   refreshMetaProgress(id: number): Observable<Meta> {
     return this.http.get<Meta>(`${this.API_URL}/${id}/refresh`).pipe(
       map(meta => this.processMetaDateFields(meta)),
-      tap(() => {
+      tap((updatedMeta) => {
         // Actualizar caché local si es necesario
         this.resetCache();
+        
+        // Notificar si se completó la meta
+        this.notifyMetaCompleted(updatedMeta);
       }),
       catchError(error => {
         console.error(`Error refreshing meta progress ${id}:`, error);

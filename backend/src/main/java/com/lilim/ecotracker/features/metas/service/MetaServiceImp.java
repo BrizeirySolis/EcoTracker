@@ -489,10 +489,22 @@ public class MetaServiceImp implements MetaService {
             metaCompletada = meta.getValorActual() >= meta.getValorObjetivo();
         }
 
-        // Actualizar estado
+        // Actualizar estado y otorgar puntos si es necesario
+        String estadoAnteriorMeta = meta.getEstado();
         if (metaCompletada) {
             meta.setEstado("completada");
-            logger.info("Meta ID {}: Meta completada", meta.getId());
+            logger.info("Meta ID {}: Estableciendo estado a 'completada'", meta.getId());
+            
+            // Otorgar puntos solo si la meta no estaba previamente completada
+            if (!"completada".equals(estadoAnteriorMeta)) {
+                try {
+                    Integer nuevaPuntuacion = userService.awardPointsForCompletedGoal();
+                    logger.info("Meta ID {}: Usuario recibió 10 puntos por completar la meta. Nueva puntuación: {}", 
+                            meta.getId(), nuevaPuntuacion);
+                } catch (Exception e) {
+                    logger.error("Error al otorgar puntos por meta completada ID {}: {}", meta.getId(), e.getMessage());
+                }
+            }
         } else if (meta.getFechaFin().isBefore(LocalDateTime.now())) {
             meta.setEstado("fallida");
             logger.info("Meta ID {}: Meta fallida (fecha vencida)", meta.getId());
@@ -500,6 +512,12 @@ public class MetaServiceImp implements MetaService {
             meta.setEstado("en_progreso");
             logger.info("Meta ID {}: Meta en progreso ({}% completado)", meta.getId(),
                     Math.min(100, Math.max(0, Math.round(progreso))));
+        }
+
+        // Información sobre el cambio de estado
+        if (!meta.getEstado().equals(estadoAnteriorMeta)) {
+            logger.info("Estado de la meta ID {} actualizado: {} -> {}",
+                    meta.getId(), estadoAnteriorMeta, meta.getEstado());
         }
     }
 
@@ -984,7 +1002,7 @@ public class MetaServiceImp implements MetaService {
                 meta.getValorActual(), meta.getValorObjetivo(), fechaFin, esReduccion);
 
         // Guardar estado anterior para logging
-        String estadoAnterior = meta.getEstado();
+        String estadoAnteriorMeta = meta.getEstado();
 
         // Evaluar si la meta está completada
         boolean metaCompletada = false;
@@ -1031,6 +1049,17 @@ public class MetaServiceImp implements MetaService {
         if (metaCompletada) {
             meta.setEstado("completada");
             logger.info("Meta ID {}: Estableciendo estado a 'completada'", meta.getId());
+            
+            // Otorgar puntos solo si la meta no estaba previamente completada
+            if (!"completada".equals(estadoAnteriorMeta)) {
+                try {
+                    Integer nuevaPuntuacion = userService.awardPointsForCompletedGoal();
+                    logger.info("Meta ID {}: Usuario recibió 10 puntos por completar la meta. Nueva puntuación: {}", 
+                            meta.getId(), nuevaPuntuacion);
+                } catch (Exception e) {
+                    logger.error("Error al otorgar puntos por meta completada ID {}: {}", meta.getId(), e.getMessage());
+                }
+            }
         } else if (fechaVencida) {
             meta.setEstado("fallida");
             logger.info("Meta ID {}: Estableciendo estado a 'fallida' (fecha vencida)", meta.getId());
@@ -1040,9 +1069,9 @@ public class MetaServiceImp implements MetaService {
         }
 
         // Información sobre el cambio de estado
-        if (!meta.getEstado().equals(estadoAnterior)) {
+        if (!meta.getEstado().equals(estadoAnteriorMeta)) {
             logger.info("Estado de la meta ID {} actualizado: {} -> {}",
-                    meta.getId(), estadoAnterior, meta.getEstado());
+                    meta.getId(), estadoAnteriorMeta, meta.getEstado());
         }
     }
 

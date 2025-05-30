@@ -3,8 +3,14 @@ export interface User {
   username: string;
   email: string;
   name: string;
+  puntuacion: number;
   roles: string[];
   token?: string;
+}
+
+export interface UserScore {
+  puntuacion: number;
+  message: string;
 }
 
 export interface LoginRequest {
