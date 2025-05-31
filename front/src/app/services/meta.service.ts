@@ -48,6 +48,9 @@ export class MetaService {
     if (meta.estado === 'completada') {
       this.metaCompletedSource.next(meta);
       
+      // MODIFICADO: Invalidar caché antes de actualizar puntuación
+      this.authService.invalidateScoreCache();
+      
       // Actualizar puntuación del usuario inmediatamente
       this.authService.getUserScore().subscribe({
         next: (response) => {

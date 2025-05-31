@@ -130,10 +130,17 @@ export class MetaDetailComponent implements OnInit {
   }
 
   /**
-   * Calcular porcentaje de progreso de la meta
+   * Calcular el porcentaje de progreso de la meta
+   * MODIFICADO: Ahora usa el progreso calculado en el backend si está disponible
    */
   calcularPorcentaje(meta: Meta): number {
-    return calcularPorcentajeMeta(meta);
+    // NUEVO: Si el backend envía el progreso calculado, usarlo directamente
+    if (meta.progreso !== undefined && meta.progreso !== null) {
+      return Math.round(meta.progreso);
+    }
+    
+    // Fallback: usar la función local si no hay progreso del backend
+    return Math.round(calcularPorcentajeMeta(meta));
   }
 
   /**

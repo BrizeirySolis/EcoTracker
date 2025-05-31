@@ -272,9 +272,9 @@ export class MetaFormComponent implements OnInit {
         break;
       case 'transporte':
         this.recommendations = [
-          { descripcion: 'Aumentar transporte sostenible a 40%', valor: 40, unidad: 'porcentaje' },
-          { descripcion: 'Reducir emisiones CO2 un 20%', valor: 20, unidad: 'porcentaje' },
-          { descripcion: 'Usar bicicleta al menos 60 km mensuales', valor: 60, unidad: 'km' }
+          { descripcion: 'Reducir el uso de auto de 10%', valor: 10, unidad: 'porcentaje' },
+          { descripcion: 'Reducir el uso de auto de 20%', valor: 20, unidad: 'porcentaje' },
+          { descripcion: 'Reducir el uso de auto de 30%', valor: 30, unidad: 'porcentaje' }
         ];
         break;
       case 'combinada':

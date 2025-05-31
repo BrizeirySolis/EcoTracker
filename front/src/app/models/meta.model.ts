@@ -18,6 +18,7 @@ export interface Meta {
   tipoEvaluacion?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  progreso?: number;
 }
 
 /**
@@ -84,13 +85,13 @@ export const METRICAS_POR_TIPO: Record<string, {
     //{ metrica: 'emisiones', descripcion: 'Reducción de emisiones CO2', unidad: 'co2' }
   ],
   'transporte': [
-    { metrica: 'porcentaje_sostenible', descripcion: 'Incremento de transporte sostenible', unidad: 'porcentaje' },
+    //{ metrica: 'porcentaje_sostenible', descripcion: 'Incremento de transporte sostenible', unidad: 'porcentaje' },
     { metrica: 'reduccion_combustion', descripcion: 'Reducción km en vehículos combustión', unidad: 'km' },
     //{ metrica: 'km_bicicleta', descripcion: 'Incremento uso de bicicleta', unidad: 'km' },
     //{ metrica: 'uso_bicicleta', descripcion: 'Kilómetros en bicicleta', unidad: 'km' },
     //{ metrica: 'emisiones', descripcion: 'Reducción de emisiones CO2', unidad: 'co2' },
     //{ metrica: 'eficiencia', descripcion: 'Mejora de eficiencia (kg CO2/km)', unidad: 'co2' },
-    { metrica: 'costo', descripcion: 'Reducción del costo de transporte', unidad: 'costo' }
+    //{ metrica: 'costo', descripcion: 'Reducción del costo de transporte', unidad: 'costo' }
   ],
   'combinada': [
     //{ metrica: 'huella_carbono', descripcion: 'Reducción de la huella de carbono total', unidad: 'co2' },
@@ -113,50 +114,34 @@ export function calcularPorcentajeMeta(meta: Meta): number {
     return 0;
   }
 
+  // NUEVO: Si el backend ya calculó el progreso, usarlo
+  if (meta.progreso !== undefined && meta.progreso !== null) {
+    return meta.progreso;
+  }
+
   // Determinar si es una meta de reducción según tipo y métrica
   const esReduccion = determinarSiEsReduccion(meta);
   console.log(`Calculando progreso para meta tipo=${meta.tipo}, métrica=${meta.metrica}`);
   console.log(`valorInicial=${meta.valorInicial}, valorActual=${meta.valorActual}, valorObjetivo=${meta.valorObjetivo}`);
   console.log(`¿Es reducción? ${esReduccion}`);
 
-  // NUEVO ENFOQUE PARA METAS DE TRANSPORTE
+  // SIMPLIFICADO: Lógica unificada para transporte
   if (meta.tipo === 'transporte') {
+    if (meta.valorObjetivo <= 0) return 0;
+
     if (esReduccion) {
-      // Para metas de reducción en transporte, valorActual representa la reducción lograda
-      // y valorObjetivo es la reducción objetivo (valorInicial - objetivo)
-      const reduccionObjetivo = meta.valorInicial ? (meta.valorInicial - meta.valorObjetivo) : meta.valorObjetivo;
-      
-      // Si la reducción lograda es negativa (se ha consumido más), el progreso es 0%
-      if (meta.valorActual < 0) {
-        return 0;
-      }
-      
-      // Si la reducción lograda supera el objetivo, el progreso es 100%
-      if (meta.valorActual >= reduccionObjetivo) {
-        return 100;
-      }
-      
-      // Calcular porcentaje de reducción lograda vs objetivo
-      return Math.min(100, Math.max(0, (meta.valorActual / reduccionObjetivo) * 100));
+      // Para reducción: progreso = (valorActual / valorObjetivo) * 100
+      // Ejemplo: Si el objetivo es máximo 250 km y llevas 50 km = 20% de progreso
+      const porcentaje = (meta.valorActual / meta.valorObjetivo) * 100;
+      return Math.min(100, Math.max(0, porcentaje));
     } else {
-      // Para metas de incremento en transporte
-      if (meta.valorObjetivo <= 0) return 0;
-      
-      // Si no hay valor inicial o es muy pequeño, calcular simplemente
-      if (!meta.valorInicial || meta.valorInicial <= 0.1) {
-        return Math.min(100, Math.max(0, (meta.valorActual / meta.valorObjetivo) * 100));
-      }
-      
-      // Si hay valor inicial, calcular el progreso desde el inicial hacia el objetivo
-      const incrementoObjetivo = meta.valorObjetivo - meta.valorInicial;
-      const incrementoActual = meta.valorActual - meta.valorInicial;
-      
-      if (incrementoObjetivo <= 0) return 0;
-      
-      return Math.min(100, Math.max(0, (incrementoActual / incrementoObjetivo) * 100));
+      // Para incremento: igual cálculo
+      const porcentaje = (meta.valorActual / meta.valorObjetivo) * 100;
+      return Math.min(100, Math.max(0, porcentaje));
     }
   }
 
+  // Para agua y electricidad, mantener la lógica original
   // Para metas donde el valor inicial es demasiado pequeño, usamos una lógica simplificada
   if (!meta.valorInicial || meta.valorInicial <= 0.1) {
     if (esReduccion) {
@@ -177,7 +162,7 @@ export function calcularPorcentajeMeta(meta: Meta): number {
     }
   }
 
-  // Para metas con valor inicial válido
+  // Para metas con valor inicial válido (agua y electricidad principalmente)
   if (esReduccion) {
     // Meta alcanzada
     if (meta.valorActual <= meta.valorObjetivo) {

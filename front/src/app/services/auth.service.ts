@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Router } from '@angular/router';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { User, LoginRequest, SignupRequest, AuthResponse, UserScore } from '../models/auth.model';
 import { environment } from '../../environments/environment';
+import { User, LoginRequest, SignupRequest, AuthResponse, UserScore } from '../models/auth.model';
 
 @Injectable({
   providedIn: 'root'
@@ -12,29 +13,20 @@ export class AuthService {
   private readonly API_URL = `${environment.apiUrl}/auth`;
   private currentUserSubject: BehaviorSubject<User | null>;
   public currentUser: Observable<User | null>;
+  
+  // NUEVO: Sistema de caché para la puntuación
+  private scoreCache: { value: number; timestamp: number } | null = null;
+  private readonly CACHE_DURATION = 5000; // 5 segundos en milisegundos
 
-  constructor(private http: HttpClient) {
-
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) {
+    // Intentar recuperar el usuario del localStorage al iniciar
     const storedUser = localStorage.getItem('currentUser');
-
-    // Inicializar el BehaviorSubject con el usuario almacenado o null
     this.currentUserSubject = new BehaviorSubject<User | null>(
       storedUser ? JSON.parse(storedUser) : null
     );
-
-    // Exponer el observable para que los componentes puedan suscribirse
-    this.currentUser = this.currentUserSubject.asObservable();
-
-    // Log para depuración
-    console.log('AuthService iniciado, usuario almacenado:',
-      storedUser ? JSON.parse(storedUser)?.username : 'ninguno');
-
-    // Inicializar el BehaviorSubject con el usuario almacenado o null
-    this.currentUserSubject = new BehaviorSubject<User | null>(
-      storedUser ? JSON.parse(storedUser) : null
-    );
-
-    // Exponer el observable para que los componentes puedan suscribirse
     this.currentUser = this.currentUserSubject.asObservable();
 
     // Log para depuración
@@ -42,6 +34,9 @@ export class AuthService {
       storedUser ? JSON.parse(storedUser)?.username : 'ninguno');
   }
 
+  /**
+   * Obtener el valor actual del usuario
+   */
   public get currentUserValue(): User | null {
     return this.currentUserSubject.value;
   }
@@ -89,6 +84,9 @@ export class AuthService {
           // Actualizar el estado
           this.currentUserSubject.next(user);
 
+          // NUEVO: Invalidar caché al hacer login
+          this.invalidateScoreCache();
+
           return user;
         })
       );
@@ -102,6 +100,12 @@ export class AuthService {
     this.currentUserSubject.next(null);
 
     console.log('Usuario desconectado');
+
+    // NUEVO: Limpiar caché
+    this.scoreCache = null;
+
+    // Redirigir al login
+    this.router.navigate(['/login']);
   }
 
   isLoggedIn(): boolean {
@@ -120,7 +124,28 @@ export class AuthService {
    * Obtener la puntuación actual del usuario
    */
   getUserScore(): Observable<UserScore> {
-    return this.http.get<UserScore>(`${this.API_URL}/user/score`);
+    // Verificar si el caché es válido
+    const now = Date.now();
+    if (this.scoreCache && (now - this.scoreCache.timestamp) < this.CACHE_DURATION) {
+      console.log('Devolviendo puntuación desde caché:', this.scoreCache.value);
+      return of({ 
+        message: 'Puntuación obtenida desde caché',
+        puntuacion: this.scoreCache.value 
+      });
+    }
+    
+    // Si no hay caché válido, hacer la llamada HTTP
+    console.log('Obteniendo puntuación desde el servidor...');
+    return this.http.get<UserScore>(`${this.API_URL}/user/score`).pipe(
+      tap(response => {
+        // Actualizar el caché
+        this.scoreCache = { 
+          value: response.puntuacion, 
+          timestamp: now 
+        };
+        console.log('Puntuación almacenada en caché:', response.puntuacion);
+      })
+    );
   }
 
   /**
@@ -132,6 +157,12 @@ export class AuthService {
       const updatedUser = { ...currentUser, puntuacion: nuevaPuntuacion };
       localStorage.setItem('currentUser', JSON.stringify(updatedUser));
       this.currentUserSubject.next(updatedUser);
+      
+      // NUEVO: Actualizar también el caché
+      this.scoreCache = {
+        value: nuevaPuntuacion,
+        timestamp: Date.now()
+      };
     }
   }
 
@@ -141,5 +172,14 @@ export class AuthService {
   getCurrentUserScore(): number {
     const currentUser = this.currentUserValue;
     return currentUser?.puntuacion || 0;
+  }
+
+  /**
+   * NUEVO: Invalidar el caché de puntuación
+   * Útil cuando sabemos que la puntuación ha cambiado
+   */
+  invalidateScoreCache(): void {
+    this.scoreCache = null;
+    console.log('Caché de puntuación invalidado');
   }
 }

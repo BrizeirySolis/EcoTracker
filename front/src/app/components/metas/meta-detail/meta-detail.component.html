@@ -146,7 +146,11 @@
             </div>
             <div class="meta-value-item">
               <span class="value-label">Valor inicial</span>
-              <span class="value-content">{{ meta.valorInicial || 'No disponible' }} {{ getUnidadAbreviada(meta.unidad) }}</span>
+              <span class="value-content">
+                {{ (meta.valorInicial !== null && meta.valorInicial !== undefined) ? meta.valorInicial : 'No disponible' }} 
+                <span *ngIf="meta.valorInicial !== null && meta.valorInicial !== undefined">{{ getUnidadAbreviada(meta.unidad) }}</span>
+                <span *ngIf="meta.valorInicial === null || meta.valorInicial === undefined">km</span>
+              </span>
             </div>
             <div class="meta-value-item">
               <span class="value-label">Tipo</span>

@@ -231,10 +231,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Suscribirse a los cambios en el estado de autenticación
     this.subscriptions.add(
-      this.authService.currentUser.subscribe(
-        user => {
-          this.currentUser = user;
-          this.isLoggedIn = !!user;
+    this.authService.currentUser.subscribe(
+      user => {
+        this.currentUser = user;
+        this.isLoggedIn = !!user;
           this.userScore = user?.puntuacion || 0;
           
           // Obtener puntuación actualizada del servidor si el usuario está logueado
