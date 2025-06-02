@@ -93,13 +93,19 @@ export class AuthService {
   }
 
   logout(): void {
-    // Eliminar usuario del localStorage
+    console.log('Ejecutando logout...');
+    
+    // Limpiar TODO el localStorage para asegurar que no queden datos antiguos
+    localStorage.clear();
+    
+    // También podemos limpiar específicamente si hay otros items
     localStorage.removeItem('currentUser');
-
+    localStorage.removeItem('token');
+    
     // Actualizar el BehaviorSubject
     this.currentUserSubject.next(null);
 
-    console.log('Usuario desconectado');
+    console.log('Usuario desconectado y localStorage limpiado');
 
     // NUEVO: Limpiar caché
     this.scoreCache = null;
