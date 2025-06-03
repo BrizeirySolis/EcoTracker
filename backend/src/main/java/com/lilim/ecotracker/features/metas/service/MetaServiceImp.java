@@ -4,6 +4,7 @@ import com.lilim.ecotracker.features.electricity.model.Electricity;
 import com.lilim.ecotracker.features.electricity.repository.ElectricityRepository;
 import com.lilim.ecotracker.features.metas.dto.MetaDTO;
 import com.lilim.ecotracker.features.metas.dto.MetaRecommendationDTO;
+import com.lilim.ecotracker.features.metas.mapper.MetaMapper;
 import com.lilim.ecotracker.features.metas.model.Meta;
 import com.lilim.ecotracker.features.metas.repository.MetaRepository;
 import com.lilim.ecotracker.features.summary.dto.ConsumptionAnalyticsDTO;
@@ -40,6 +41,7 @@ public class MetaServiceImp implements MetaService {
     private final WaterRepository waterRepository;
     private final ElectricityRepository electricityRepository;
     private final TransportRepository transportRepository;
+    private final MetaMapper metaMapper;
 
     @Autowired
     public MetaServiceImp(
@@ -48,34 +50,36 @@ public class MetaServiceImp implements MetaService {
             ConsumptionAnalyticsService analyticsService,
             WaterRepository waterRepository,
             ElectricityRepository electricityRepository,
-            TransportRepository transportRepository) {
+            TransportRepository transportRepository,
+            MetaMapper metaMapper) {
         this.metaRepository = metaRepository;
         this.userService = userService;
         this.analyticsService = analyticsService;
         this.waterRepository = waterRepository;
         this.electricityRepository = electricityRepository;
         this.transportRepository = transportRepository;
+        this.metaMapper = metaMapper;
     }
 
     @Override
     public List<MetaDTO> getAllMetas() {
         User currentUser = userService.getCurrentUser();
         List<Meta> metas = metaRepository.findByUserIdOrderByCreatedAtDesc(currentUser.getId());
-        return convertToDTOList(metas);
+        return metaMapper.convertToDTOList(metas);
     }
 
     @Override
     public List<MetaDTO> getMetasByTipo(String tipo) {
         User currentUser = userService.getCurrentUser();
         List<Meta> metas = metaRepository.findByUserIdAndTipoOrderByCreatedAtDesc(currentUser.getId(), tipo);
-        return convertToDTOList(metas);
+        return metaMapper.convertToDTOList(metas);
     }
 
     @Override
     public Optional<MetaDTO> getMetaById(Long id) {
         User currentUser = userService.getCurrentUser();
         return metaRepository.findByIdAndUserId(id, currentUser.getId())
-                .map(this::convertToDTO);
+                .map(metaMapper::convertToDTO);
     }
 
     @Transactional
@@ -126,7 +130,7 @@ public class MetaServiceImp implements MetaService {
             savedMeta = metaRepository.save(savedMeta);
         }
 
-        return convertToDTO(savedMeta);
+        return metaMapper.convertToDTO(savedMeta);
     }
 
     /**
@@ -286,7 +290,7 @@ public class MetaServiceImp implements MetaService {
             updateAutomaticProgress(updatedMeta);
         }
 
-        return convertToDTO(updatedMeta);
+        return metaMapper.convertToDTO(updatedMeta);
     }
 
     @Override
@@ -303,7 +307,7 @@ public class MetaServiceImp implements MetaService {
         actualizarEstadoMeta(meta);
 
         Meta updatedMeta = metaRepository.save(meta);
-        return convertToDTO(updatedMeta);
+        return metaMapper.convertToDTO(updatedMeta);
     }
 
     @Override
@@ -371,236 +375,6 @@ public class MetaServiceImp implements MetaService {
         }
 
         logger.info("Actualización automática finalizada. {} metas actualizadas.", count);
-    }
-
-    /**
-     * Convertir entidad Meta a DTO
-     */
-    private MetaDTO convertToDTO(Meta meta) {
-        // Redondear valores para evitar decimales excesivos
-        Double valorObjetivo = meta.getValorObjetivo() != null ? 
-            Math.round(meta.getValorObjetivo() * 100.0) / 100.0 : null;
-        Double valorActual = meta.getValorActual() != null ? 
-            Math.round(meta.getValorActual() * 100.0) / 100.0 : null;
-        Double valorInicial = meta.getValorInicial() != null ? 
-            Math.round(meta.getValorInicial() * 100.0) / 100.0 : null;
-        
-        // NUEVO: Calcular progreso según el tipo de meta
-        Double progreso = 0.0;
-        if ("transporte".equals(meta.getTipo())) {
-            progreso = calcularProgresoTransporte(meta);
-        } else {
-            // Para agua y electricidad, usar la lógica original
-            if (valorActual != null && valorObjetivo != null && valorInicial != null && valorInicial > 0) {
-                if (isReductionMetric(meta.getTipo(), meta.getMetrica())) {
-                    // Para reducción: calcular cuánto se ha reducido
-                    double reduccionTotal = valorInicial - valorObjetivo;
-                    double reduccionActual = valorInicial - valorActual;
-                    if (reduccionTotal > 0) {
-                        progreso = (reduccionActual / reduccionTotal) * 100;
-                        progreso = Math.min(100, Math.max(0, progreso));
-                    }
-                } else {
-                    // Para incremento
-                    if (valorObjetivo > 0) {
-                        progreso = (valorActual / valorObjetivo) * 100;
-                        progreso = Math.min(100, Math.max(0, progreso));
-                    }
-                }
-            }
-        }
-        
-        // Redondear progreso a 2 decimales
-        progreso = Math.round(progreso * 100.0) / 100.0;
-        
-        logger.info("Convirtiendo Meta a DTO: id={}, tipo={}, valorInicial={}, valorActual={}, valorObjetivo={}, progreso={}%",
-                meta.getId(), meta.getTipo(), valorInicial, valorActual, valorObjetivo, progreso);
-
-        return MetaDTO.builder()
-                .id(meta.getId())
-                .titulo(meta.getTitulo())
-                .descripcion(meta.getDescripcion())
-                .tipo(meta.getTipo())
-                .valorObjetivo(valorObjetivo)
-                .unidad(meta.getUnidad())
-                .metrica(meta.getMetrica())
-                .fechaInicio(meta.getFechaInicio())
-                .fechaFin(meta.getFechaFin())
-                .estado(meta.getEstado())
-                .valorActual(valorActual)
-                .valorInicial(valorInicial)
-                .tipoEvaluacion(meta.getTipoEvaluacion())
-                .createdAt(meta.getCreatedAt())
-                .updatedAt(meta.getUpdatedAt())
-                .progreso(progreso)  // NUEVO: Incluir progreso calculado
-                .build();
-    }
-
-    /**
-     * Convertir lista de entidades Meta a lista de DTOs
-     */
-    private List<MetaDTO> convertToDTOList(List<Meta> metas) {
-        return metas.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Determinar el tipo de evaluación según el tipo de meta
-     */
-    private String determinarTipoEvaluacion(String tipo) {
-        // Por defecto todas las metas son automáticas, excepto las de "otro"
-        return "otro".equals(tipo) ? "manual" : "automatica";
-    }
-
-    /**
-     * Actualizar el estado de una meta basado en el progreso actual
-     */
-    private void updateMetaStatus(Meta meta) {
-        logger.info("Evaluando estado meta ID {}: valorActual={}, valorInicial={}, valorObjetivo={}",
-                meta.getId(), meta.getValorActual(), meta.getValorInicial(), meta.getValorObjetivo());
-
-        // Determinar si es meta de reducción basado en tipo y métrica
-        boolean esReduccion = isReductionMetric(meta.getTipo(), meta.getMetrica());
-
-        // Para transporte, verificar métricas específicas
-        if ("transporte".equals(meta.getTipo())) {
-            // Métricas de reducción incluyen "reduccion_combustion", "emisiones", "costo"
-            // Métricas de incremento incluyen "porcentaje_sostenible", "km_bicicleta", "uso_bicicleta"
-            if ("km_bicicleta".equals(meta.getMetrica()) ||
-                    "uso_bicicleta".equals(meta.getMetrica()) ||
-                    "porcentaje_sostenible".equals(meta.getMetrica())) {
-                esReduccion = false; // Estas son metas de incremento
-            }
-        }
-
-        // Si el valor inicial es "No disponible", establecerlo adecuadamente
-        if (meta.getValorInicial() == null || "No disponible".equals(meta.getValorInicial())) {
-            if (esReduccion) {
-                // Para reducción, establecer mayor que el objetivo
-                meta.setValorInicial(meta.getValorObjetivo() * 1.5);
-            } else {
-                // Para incremento, establecer en 0
-                meta.setValorInicial(0.0);
-            }
-            logger.info("Meta ID {}: Valor inicial corregido de 'No disponible' a {}",
-                    meta.getId(), meta.getValorInicial());
-        }
-
-        // Calcular progreso para logging
-        double progreso = 0;
-        if (esReduccion) {
-            if (meta.getValorInicial() != null && meta.getValorActual() != null) {
-                double reduccionTotal = meta.getValorInicial() - meta.getValorObjetivo();
-                if (reduccionTotal > 0) {
-                    double reduccionActual = meta.getValorInicial() - meta.getValorActual();
-                    progreso = (reduccionActual / reduccionTotal) * 100;
-                    logger.info("Meta ID {}: Progreso calculado para reducción: {}%", meta.getId(), progreso);
-                }
-            }
-        } else {
-            if (meta.getValorActual() != null && meta.getValorObjetivo() > 0) {
-                progreso = (meta.getValorActual() / meta.getValorObjetivo()) * 100;
-                logger.info("Meta ID {}: Progreso calculado para incremento: {}%", meta.getId(), progreso);
-            }
-        }
-
-        // Determinar si la meta está completada
-        boolean metaCompletada = false;
-        if (esReduccion) {
-            metaCompletada = meta.getValorActual() <= meta.getValorObjetivo();
-        } else {
-            metaCompletada = meta.getValorActual() >= meta.getValorObjetivo();
-        }
-
-        // Actualizar estado y otorgar puntos si es necesario
-        String estadoAnteriorMeta = meta.getEstado();
-        if (metaCompletada) {
-            meta.setEstado("completada");
-            logger.info("Meta ID {}: Estableciendo estado a 'completada'", meta.getId());
-            
-            // Otorgar puntos solo si la meta no estaba previamente completada
-            if (!"completada".equals(estadoAnteriorMeta)) {
-                try {
-                    Integer nuevaPuntuacion = userService.awardPointsForCompletedGoal();
-                    logger.info("Meta ID {}: Usuario recibió 10 puntos por completar la meta. Nueva puntuación: {}", 
-                            meta.getId(), nuevaPuntuacion);
-                } catch (Exception e) {
-                    logger.error("Error al otorgar puntos por meta completada ID {}: {}", meta.getId(), e.getMessage());
-                }
-            }
-        } else if (meta.getFechaFin().isBefore(LocalDateTime.now())) {
-            meta.setEstado("fallida");
-            logger.info("Meta ID {}: Meta fallida (fecha vencida)", meta.getId());
-        } else {
-            meta.setEstado("en_progreso");
-            logger.info("Meta ID {}: Meta en progreso ({}% completado)", meta.getId(),
-                    Math.min(100, Math.max(0, Math.round(progreso))));
-        }
-
-        // Información sobre el cambio de estado
-        if (!meta.getEstado().equals(estadoAnteriorMeta)) {
-            logger.info("Estado de la meta ID {} actualizado: {} -> {}",
-                    meta.getId(), estadoAnteriorMeta, meta.getEstado());
-        }
-    }
-
-    /**
-     * Verificar si una meta se ha completado
-     */
-    private boolean isMetaCompleted(Meta meta) {
-        // Si no hay progreso (valor actual es 0 o null), la meta no está completada
-        if (meta.getValorActual() == null || meta.getValorActual() == 0) {
-            return false;
-        }
-
-        // Para metas de reducción, lógica inversa (menor es mejor)
-        if (isReductionMetric(meta.getTipo(), meta.getMetrica())) {
-            return meta.getValorActual() <= meta.getValorObjetivo();
-        } else {
-            // Para metas de incremento, mayor o igual es completado
-            return meta.getValorActual() >= meta.getValorObjetivo();
-        }
-    }
-
-    /**
-     * Verificar si una meta ha fallado (fecha de fin pasada y no completada)
-     */
-    private boolean isMetaFailed(Meta meta) {
-        return meta.getFechaFin().isBefore(LocalDateTime.now()) && !isMetaCompleted(meta);
-    }
-
-    /**
-     * Determinar si una métrica es de reducción (menor es mejor)
-     */
-    private boolean isReductionMetric(String tipo, String metrica) {
-        // La mayoría de métricas de agua, electricidad y emisiones son de reducción
-        if ("agua".equals(tipo) || "electricidad".equals(tipo)) {
-            // Excepto benchmarks que pueden ser "mantener por debajo de"
-            return !"benchmark".equals(metrica);
-        }
-
-        // En transporte, depende de la métrica
-        if ("transporte".equals(tipo)) {
-            // Métricas específicas de reducción
-            boolean esReduccion = "reduccion_combustion".equals(metrica) ||
-                    "emisiones".equals(metrica) ||
-                    "costo".equals(metrica);
-
-            // Métricas específicas de incremento (como uso de bicicleta)
-            boolean esIncremento = "porcentaje_sostenible".equals(metrica) ||
-                    "km_bicicleta".equals(metrica) ||
-                    "uso_bicicleta".equals(metrica);
-
-            if (esReduccion) return true;
-            if (esIncremento) return false;
-
-            // Si no es una métrica específica, usar heurística
-            return true; // Por defecto asumimos reducción para transporte
-        }
-
-        // Para tipos combinados u otros, evaluar por el valor objetivo vs actual
-        return false; // Por defecto para otros tipos
     }
 
     /**
@@ -1581,38 +1355,8 @@ public class MetaServiceImp implements MetaService {
 
         // Convertir a DTOs y devolver
         return metasActualizadas.stream()
-                .map(this::convertToDTO)
+                .map(metaMapper::convertToDTO)
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * NUEVO: Calcula el progreso específicamente para metas de transporte
-     * Para transporte, el progreso se calcula de manera diferente:
-     * - Para reducción: progreso = (valorActual / valorObjetivo) * 100 (menos es mejor)
-     * - Para incremento: progreso = (valorActual / valorObjetivo) * 100 (más es mejor)
-     */
-    private double calcularProgresoTransporte(Meta meta) {
-        if (meta.getValorActual() == null || meta.getValorObjetivo() == null || meta.getValorObjetivo() <= 0) {
-            return 0.0;
-        }
-
-        boolean esReduccion = isReductionMetric(meta.getTipo(), meta.getMetrica());
-        
-        if (esReduccion) {
-            // Para metas de reducción (ej: máximo 250 km en auto)
-            // Progreso = cuánto has usado del límite permitido
-            // Si has usado 50 km de 250 km permitidos = 20% de progreso
-            double porcentaje = (meta.getValorActual() / meta.getValorObjetivo()) * 100;
-            
-            // Limitar a 100% aunque se exceda el objetivo
-            return Math.min(100, Math.max(0, porcentaje));
-        } else {
-            // Para metas de incremento (ej: mínimo 100 km en bicicleta)
-            // Progreso = cuánto has alcanzado del objetivo
-            double porcentaje = (meta.getValorActual() / meta.getValorObjetivo()) * 100;
-            
-            return Math.min(100, Math.max(0, porcentaje));
-        }
     }
 
     /**
@@ -1688,5 +1432,46 @@ public class MetaServiceImp implements MetaService {
                     meta.getId(), meta.getValorActual(), meta.getValorObjetivo());
             return "en_progreso";
         }
+    }
+
+    /**
+     * Determinar si una métrica es de reducción (menor es mejor)
+     */
+    private boolean isReductionMetric(String tipo, String metrica) {
+        // La mayoría de métricas de agua, electricidad y emisiones son de reducción
+        if ("agua".equals(tipo) || "electricidad".equals(tipo)) {
+            // Excepto benchmarks que pueden ser "mantener por debajo de"
+            return !"benchmark".equals(metrica);
+        }
+
+        // En transporte, depende de la métrica
+        if ("transporte".equals(tipo)) {
+            // Métricas específicas de reducción
+            boolean esReduccion = "reduccion_combustion".equals(metrica) ||
+                    "emisiones".equals(metrica) ||
+                    "costo".equals(metrica);
+
+            // Métricas específicas de incremento (como uso de bicicleta)
+            boolean esIncremento = "porcentaje_sostenible".equals(metrica) ||
+                    "km_bicicleta".equals(metrica) ||
+                    "uso_bicicleta".equals(metrica);
+
+            if (esReduccion) return true;
+            if (esIncremento) return false;
+
+            // Si no es una métrica específica, usar heurística
+            return true; // Por defecto asumimos reducción para transporte
+        }
+
+        // Para tipos combinados u otros, evaluar por el valor objetivo vs actual
+        return false; // Por defecto para otros tipos
+    }
+
+    /**
+     * Determinar el tipo de evaluación según el tipo de meta
+     */
+    private String determinarTipoEvaluacion(String tipo) {
+        // Por defecto todas las metas son automáticas, excepto las de "otro"
+        return "otro".equals(tipo) ? "manual" : "automatica";
     }
 }
