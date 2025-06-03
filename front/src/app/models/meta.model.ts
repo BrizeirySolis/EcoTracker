@@ -231,16 +231,24 @@ function determinarSiEsReduccion(meta: Meta): boolean {
  * @returns Estado de la meta para visualización
  */
 export function obtenerEstadoMeta(meta: Meta): 'success' | 'warning' | 'danger' | 'info' {
+  // Prioridad: usar el estado calculado por el backend
+  if (meta.estado === 'fallida') {
+    return 'danger';
+  }
+  if (meta.estado === 'completada') {
+    return 'success';
+  }
+  // Si está en progreso, aplicar la lógica visual previa
   const hoy = new Date();
   const fechaFin = new Date(meta.fechaFin);
   const porcentaje = calcularPorcentajeMeta(meta);
 
-  // Meta completada
+  // Meta completada (fallback)
   if (porcentaje >= 100) {
     return 'success';
   }
 
-  // Meta vencida
+  // Meta vencida (fallback)
   if (fechaFin < hoy) {
     return 'danger';
   }

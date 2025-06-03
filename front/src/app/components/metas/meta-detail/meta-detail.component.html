@@ -120,7 +120,8 @@
           <div class="status-text">
             <span *ngIf="getEstadoMeta(meta) === 'success'">¡Meta alcanzada!</span>
             <span *ngIf="getEstadoMeta(meta) === 'warning'">En progreso con retraso</span>
-            <span *ngIf="getEstadoMeta(meta) === 'danger'">Meta vencida</span>
+            <span *ngIf="getEstadoMeta(meta) === 'danger' && meta.estado === 'fallida'">Meta fallida</span>
+            <span *ngIf="getEstadoMeta(meta) === 'danger' && meta.estado !== 'fallida'">Meta vencida</span>
             <span *ngIf="getEstadoMeta(meta) === 'info'">En progreso</span>
           </div>
         </div>

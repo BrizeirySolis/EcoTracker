@@ -79,8 +79,6 @@ public interface MetaRepository extends JpaRepository<Meta, Long> {
      */
     List<Meta> findByUserIdAndFechaInicioBetween(Long userId, LocalDateTime fechaInicio, LocalDateTime fechaFin);
 
-    // En backend/src/main/java/com/lilim/ecotracker/features/metas/repository/MetaRepository.java
-
     /**
      * Encuentra metas por tipo, tipo de evaluación y estado
      *
@@ -91,5 +89,44 @@ public interface MetaRepository extends JpaRepository<Meta, Long> {
      */
     List<Meta> findByTipoAndTipoEvaluacionAndEstado(String tipo, String tipoEvaluacion, String estado);
 
-    List<Meta> findByTipoAndTipoEvaluacionAndEstadoAndUserId(String tipo, String automatica, String enProgreso, Long id);
+    /**
+     * Encuentra metas específicas de un usuario por tipo, evaluación y estado
+     *
+     * @param tipo           Tipo de meta
+     * @param tipoEvaluacion Tipo de evaluación
+     * @param estado         Estado de la meta
+     * @param userId         ID del usuario
+     * @return Lista de metas
+     */
+    List<Meta> findByTipoAndTipoEvaluacionAndEstadoAndUserId(String tipo, String tipoEvaluacion, String estado, Long userId);
+
+    /**
+     * Encuentra metas de un usuario por tipo de evaluación y estado
+     *
+     * @param userId         ID del usuario
+     * @param tipoEvaluacion Tipo de evaluación
+     * @param estado         Estado de la meta
+     * @return Lista de metas
+     */
+    List<Meta> findByUserIdAndTipoEvaluacionAndEstado(Long userId, String tipoEvaluacion, String estado);
+
+    /**
+     * Encuentra metas de un usuario por tipo, evaluación y estado
+     *
+     * @param userId         ID del usuario
+     * @param tipo           Tipo de meta
+     * @param tipoEvaluacion Tipo de evaluación
+     * @param estado         Estado de la meta
+     * @return Lista de metas
+     */
+    List<Meta> findByUserIdAndTipoAndTipoEvaluacionAndEstado(Long userId, String tipo, String tipoEvaluacion, String estado);
+
+    /**
+     * Encuentra todas las metas de un usuario por tipo de evaluación
+     *
+     * @param userId         ID del usuario
+     * @param tipoEvaluacion Tipo de evaluación
+     * @return Lista de metas
+     */
+    List<Meta> findByUserIdAndTipoEvaluacion(Long userId, String tipoEvaluacion);
 }
